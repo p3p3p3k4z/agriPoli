@@ -1,0 +1,11 @@
+# AgriPoli - AniIta Agent Swarm
+.env
+__pycache__/
+*.pyc
+output/*.json
+vectorstore_temp/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/

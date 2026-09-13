@@ -1,0 +1,29 @@
+# Subproyectos / repositorios independientes
+a-u-ita/
+OptiAgent/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Archivos de entorno y credenciales
+.env
+*.env
+
+# Archivos de Python compilados y cachés
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Datos masivos y binarios pesados (>2 GB)
+data/descargas_masivas/
+**/data/descargas_masivas/
+*.zip
+*.tar.gz
+
+# Datos temporales y salidas
+output/*.json
+vectorstore_temp/
+.DS_Store

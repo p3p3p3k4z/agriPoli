@@ -1,0 +1,33 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+# --- Ecosistema LangChain ---
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+langchain-text-splitters
+langchain-experimental
+langchain-huggingface
+langchain-groq
+langchain-cohere
+
+# --- LangGraph ---
+langgraph
+
+# --- Proveedores de IA ---
+google-generativeai
+faiss-cpu
+tavily-python
+groq
+cohere
+
+# --- Scraping y Documentos ---
+playwright
+beautifulsoup4
+lxml
+pypdf
+
+# --- Utilidades ---
+python-dotenv
+pydantic
+requests
+aiofiles
