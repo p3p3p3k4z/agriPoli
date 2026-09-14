@@ -37,7 +37,7 @@ START → [🔍 Investigador] → [🕷️ Scraper & RAG] → [🧠 Sintetizador
 ### 1. Instalar dependencias
 
 ```bash
-cd enjambre_de_agentes
+cd enjambre_agentes
 pip install -r requirements.txt
 playwright install chromium
 ```
