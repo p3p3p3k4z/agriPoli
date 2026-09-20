@@ -77,7 +77,7 @@ Las consultas deben ser en ESPAÑOL y específicas para México.
 Incluye el nombre de la región en cada consulta.
 """
 
-PROMPT_INVESTIGADOR = """Eres el Agente Investigador del enjambre AniIta.
+PROMPT_INVESTIGADOR = """Eres el Agente Investigador del Sistema Multiagente AgriPoli.
 Tu tarea es buscar URLs relevantes sobre la región "{region}" de México.
 
 Usa las herramientas de búsqueda disponibles para encontrar información de fuentes
@@ -117,15 +117,15 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
     model_name = state.get("llm_model_name")
     
     print(f"\n{'='*60}")
-    print(f"[🔍 Investigador] Iniciando investigación para: {region}")
-    print(f"[🔍 Investigador] Proveedor LLM: {provider}")
+    print(f"(o.O)? [AGENTE: INVESTIGADOR] Iniciando investigación para: {region}")
+    print(f"[._.] [AGENTE: INVESTIGADOR] Proveedor LLM: {provider}")
     print(f"{'='*60}")
     
     llm = get_llm(provider, model_name)
     errores = []
     
     # --- Paso 1: Generar consultas optimizadas con structured output ---
-    print("[🔍 Investigador] Generando consultas de búsqueda optimizadas...")
+    print("(・_・)? [AGENTE: INVESTIGADOR] Generando consultas de búsqueda optimizadas...")
     
     try:
         llm_structured = llm.with_structured_output(ConsultasBusqueda)
@@ -133,7 +133,7 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
             PROMPT_GENERAR_QUERIES.format(region=region)
         )
     except Exception as e:
-        print(f"[🔍 Investigador] Error en structured output: {e}. Usando queries por defecto.")
+        print(f"(¬_¬) [ALERTA: INVESTIGADOR] Error en structured output: {e}. Usando queries por defecto.")
         errores.append(f"Investigador: Error generando queries dinámicas: {e}")
         consultas = ConsultasBusqueda(
             queries_polinizadores=[
@@ -162,16 +162,16 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
     # --- Paso 1.5: Explorar especies clave en Enciclovida ---
     urls_enciclovida = []
     if consultas.especies_clave:
-        print(f"\n[🔍 Investigador] Explorando {len(consultas.especies_clave)} especies clave en Enciclovida...")
+        print(f"\n(*_*)! [AGENTE: INVESTIGADOR] Explorando {len(consultas.especies_clave)} especies clave en Enciclovida...")
         for especie in consultas.especies_clave:
-            print(f"  → Buscando: '{especie}'")
+            print(f"  * Buscando: '{especie}'")
             try:
                 res_enciclovida = explorador_enciclovida.invoke({"query": especie})
                 urls_extraidas = _extraer_urls(res_enciclovida)
                 urls_enciclovida.extend(urls_extraidas)
-                print(f"  ✓ {len(urls_extraidas)} URLs de API encontradas")
+                print(f"  (^_^)/ [OK] {len(urls_extraidas)} URLs de API encontradas")
             except Exception as e:
-                print(f"  ✗ Error buscando especie '{especie}': {e}")
+                print(f"  [X_X] [ERROR] Error buscando especie '{especie}': {e}")
                 errores.append(f"Investigador/Especie: Error en '{especie}': {e}")
     
     # --- Paso 2: Ejecutar búsquedas por categoría ---
@@ -186,10 +186,10 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
     resultados_urls: dict[str, list[str]] = {k: [] for k in categorias}
     
     for categoria, (queries, tema) in categorias.items():
-        print(f"\n[🔍 Investigador] Buscando: {categoria.upper()}")
+        print(f"\n(o.O)? [AGENTE: INVESTIGADOR] Buscando: {categoria.upper()}")
         
         for query in queries:
-            print(f"  → Query: '{query}'")
+            print(f"  * Query: '{query}'")
             try:
                 # Usar herramienta especializada según categoría
                 if categoria == "polinizadores" or categoria == "flora":
@@ -206,11 +206,11 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
                 # Extraer URLs del resultado
                 urls = _extraer_urls(resultado)
                 resultados_urls[categoria].extend(urls)
-                print(f"  ✓ Encontradas {len(urls)} URLs")
+                print(f"  (^_^)/ [OK] Encontradas {len(urls)} URLs")
                 
             except Exception as e:
                 error_msg = f"Error buscando '{query}': {e}"
-                print(f"  ✗ {error_msg}")
+                print(f"  [X_X] [ERROR] {error_msg}")
                 errores.append(f"Investigador/{categoria}: {error_msg}")
                 
         # Agregar URLs de Enciclovida a las categorías correspondientes
@@ -222,9 +222,9 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
         resultados_urls[cat] = list(dict.fromkeys(resultados_urls[cat]))
     
     total_urls = sum(len(v) for v in resultados_urls.values())
-    print(f"\n[🔍 Investigador] Total URLs descubiertas: {total_urls}")
+    print(f"\n[O_O]! [AGENTE: INVESTIGADOR] Total URLs descubiertas: {total_urls}")
     for cat, urls in resultados_urls.items():
-        print(f"  {cat}: {len(urls)} URLs")
+        print(f"  * {cat}: {len(urls)} URLs")
     
     return {
         "urls_polinizadores": resultados_urls["polinizadores"],

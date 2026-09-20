@@ -1,20 +1,20 @@
-# 🌱 AniIta — Enjambre de Agentes para Recolección Ecológica y Agrícola de México
+# (^-^) [AGRIPOLI] Sistema de Apoyo Multiagente para el Manejo Agricola y Preservacion de Polinizadores
 
-> Sistema multi-agente orquestado con **LangGraph** que automatiza la búsqueda, recolección, extracción y síntesis de datos ecológicos, geográficos y agrícolas de México para el proyecto **Añi Ita**.
+> Sistema multi-agente orquestado con **LangGraph** que automatiza la búsqueda, recolección, extracción y síntesis de datos ecológicos, geográficos y agrícolas de México para el **Sistema Interactivo Inteligente para el Manejo Agrícola y Preservación de Polinizadores (AgriPoli)**.
 
 ---
 
-## 🏗️ Arquitectura del Enjambre
+## [O_O] [ARQUITECTURA] Arquitectura del Enjambre
 
 El sistema ha evolucionado de un simple flujo secuencial a un **Enjambre Jerárquico** controlado por un Agente Supervisor:
 
 ```
-🙋‍♂️ Usuario <---> [🛡️ Supervisor] <───> [💾 Gestor Descargas Masivas]
-                         │
-        ┌────────────────┴────────────────┐
-        ▼                                 ▼
-[🕷️ Grupo 1: Investigador]     [💬 Grupo 2: Agro-Experto]
-(Scraping Web, PDFs, RAG)      (Catálogos INEGI, BD Locales)
+(^-^) Usuario <---> [O_O] [Supervisor] <───> [._.] [Gestor Descargas Masivas]
+                          │
+         ┌────────────────┴────────────────┐
+         ▼                                 ▼
+[>_<] [Grupo 1: Investigador]    (ง •̀_•́)ง [Grupo 2: Agro-Experto]
+(Scraping Web, PDFs, RAG)        (Catálogos INEGI, BD Locales)
 ```
 
 ### Nodos del Enjambre
@@ -26,14 +26,14 @@ El sistema ha evolucionado de un simple flujo secuencial a un **Enjambre Jerárq
 | **Agro Experto** | Cruza datos de bases locales y la API oficial del BISE. | `consultar_base_agricola_local`, `consultar_indicador_inegi` |
 
 ### Fuentes Oficiales
-- 🇲🇽 **CONABIO** / EncicloVida — Biodiversidad y Polinizadores
-- 🌾 **SADER** / SIAP — Agricultura y Cierres Agrícolas
-- 🗺️ **INEGI** — Geografía, Edafología y Socioeconomía
-- 🎓 **UNAM** / IBUNAM — Colecciones Botánicas e Insectos
+* [MEX] **CONABIO** / EncicloVida — Biodiversidad y Polinizadores
+* [SADER] **SADER** / SIAP — Agricultura y Cierres Agrícolas
+* [INEGI] **INEGI** — Geografía, Edafología y Socioeconomía
+* [UNAM] **UNAM** / IBUNAM — Colecciones Botánicas e Insectos
 
 ---
 
-## ⚡ Quickstart (Entorno `uv`)
+## (^_^)/ [QUICKSTART] Quickstart (Entorno `uv`)
 
 El proyecto utiliza el moderno gestor **uv** y su `pyproject.toml` para ser ultra rápido.
 
@@ -61,7 +61,7 @@ uv run python scripts/main_supervisor.py
 
 ---
 
-## 💾 Extracción de Datos Libres y Descargas Masivas
+## [._.] [DESCARGAS: MASIVAS] Extracción de Datos Libres y Descargas Masivas
 
 Además de la búsqueda dinámica, el Enjambre cuenta con un potente motor unificado de descargas asíncronas (`DescargadorMasivoAsync`). Este motor te permite bajar las bases de datos gubernamentales completas a tu computadora.
 
@@ -82,10 +82,10 @@ uv run python scripts/descarga_unam.py
 
 > **Gestión de Referencias:** Todas las extracciones masivas registran automáticamente su URL de origen, título y fecha en `data/referencias.json`, garantizando así el rigor científico y trazabilidad de los datos.
 
-## 📦 Estructura del Proyecto
+## [O_O] [ESTRUCTURA] Estructura del Proyecto
 
 ```
-AniIta/
+AgriPoli/enjambre_agentes/
 ├── config/
 │   ├── keys.py         # Gestión de API keys
 │   └── models.py       # Fábrica LLM multi-proveedor
@@ -108,7 +108,7 @@ AniIta/
 
 ---
 
-## 📋 Schema de Salida (DatosRegion)
+## [._.] [SCHEMA] Schema de Salida (DatosRegion)
 
 El JSON generado sigue el schema `DatosRegion` con los siguientes campos principales:
 
@@ -139,19 +139,19 @@ El JSON generado sigue el schema `DatosRegion` con los siguientes campos princip
 
 ---
 
-## 🔧 Proveedores LLM
+## (^-^) [PROVEEDORES] Proveedores LLM
 
 El sistema soporta intercambio transparente entre proveedores:
 
 | Proveedor | Modelo Default | Uso Recomendado |
 |-----------|---------------|-----------------|
-| **Gemini** | `gemini-2.5-flash-lite` | Producción (structured output nativo) |
+| **Gemini** | `gemini-flash-latest` | Producción (structured output nativo) |
 | **Groq** | `llama-3.3-70b-versatile` | Velocidad (inferencia ultra-rápida) |
 | **Cohere** | `command-r7b-12-2024` | Alternativa (RAG optimizado) |
 
 ---
 
-## 🌍 Regiones de Prueba Sugeridas
+## (*_*) [REGIONES] Regiones de Prueba Sugeridas
 
 | Región | Características |
 |--------|----------------|
@@ -163,6 +163,6 @@ El sistema soporta intercambio transparente entre proveedores:
 
 ---
 
-## 📄 Licencia
+## (^-^)/ [LICENCIA] Licencia
 
-Proyecto académico para el sistema Añi Ita.
+Proyecto académico — Sistema Interactivo Inteligente para el Manejo Agrícola y Preservación de Polinizadores (AgriPoli).

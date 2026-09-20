@@ -39,13 +39,13 @@ def _scrapear_urls(urls: list[str], max_urls: int = MAX_URLS_POR_CATEGORIA) -> t
             tipo = detectar_tipo_contenido(url)
             
             if tipo == "pdf":
-                print(f"    📄 Extrayendo PDF: {url[:80]}...")
+                print(f"    [._.] [DOC: PDF] Extrayendo PDF: {url[:80]}...")
                 contenido = lector_pdf_web.invoke({"url": url})
             elif tipo == "json":
-                print(f"    📊 Extrayendo JSON API: {url[:80]}...")
+                print(f"    [._.] [DOC: JSON] Extrayendo JSON API: {url[:80]}...")
                 contenido = lector_json_api.invoke({"url": url})
             else:
-                print(f"    🌐 Scrapeando HTML: {url[:80]}...")
+                print(f"    (>_<) [DOC: HTML] Scrapeando HTML: {url[:80]}...")
                 contenido = lector_web_playwright.invoke({"url": url})
             
             if contenido and not contenido.startswith("Error"):
@@ -55,7 +55,7 @@ def _scrapear_urls(urls: list[str], max_urls: int = MAX_URLS_POR_CATEGORIA) -> t
                 
         except Exception as e:
             error_msg = f"Error scrapeando {url}: {e}"
-            print(f"    ✗ {error_msg}")
+            print(f"    [X_X] [ERROR] {error_msg}")
             errores.append(error_msg)
     
     return "\n\n---\n\n".join(contenidos), errores
@@ -75,7 +75,7 @@ def scraper_node(state: ScrapingState) -> dict[str, Any]:
     provider = state["provider"]
     
     print(f"\n{'='*60}")
-    print(f"[🕷️ Scraper & RAG] Extrayendo contenido para: {region}")
+    print(f"(>_<) [AGENTE: SCRAPER & RAG] Extrayendo contenido para: {region}")
     print(f"{'='*60}")
     
     errores_totales = list(state.get("errores", []))
@@ -93,10 +93,10 @@ def scraper_node(state: ScrapingState) -> dict[str, Any]:
     textos_para_rag: list[str] = []
     
     for categoria, urls in categorias.items():
-        print(f"\n[🕷️ Scraper] Procesando {categoria.upper()} ({len(urls)} URLs)")
+        print(f"\n(>_<) [AGENTE: SCRAPER] Procesando {categoria.upper()} ({len(urls)} URLs)")
         
         if not urls:
-            print(f"  ⚠ Sin URLs para {categoria}. Saltando.")
+            print(f"  (¬_¬) [ALERTA] Sin URLs para {categoria}. Saltando.")
             contenidos[categoria] = f"No se encontraron URLs para {categoria} en la región {region}."
             continue
         
@@ -109,7 +109,7 @@ def scraper_node(state: ScrapingState) -> dict[str, Any]:
         if contenido:
             # Verificar si necesita RAG (textos muy extensos)
             if necesita_rag(contenido):
-                print(f"  [RAG] Contenido extenso ({len(contenido):,} chars). Aplicando RAG...")
+                print(f"  [O_O] [RAG: VECTORIZADOR] Contenido extenso ({len(contenido):,} chars). Aplicando RAG...")
                 query_rag = f"{categoria} {region} México datos específicos"
                 contenido_comprimido = vectorizar_temporal(
                     textos=[contenido],
@@ -126,7 +126,7 @@ def scraper_node(state: ScrapingState) -> dict[str, Any]:
     # RAG consolidado sobre todos los textos extensos
     contenido_rag = ""
     if textos_para_rag:
-        print(f"\n[🕷️ Scraper] Aplicando RAG consolidado sobre {len(textos_para_rag)} textos extensos...")
+        print(f"\n(>_<) [AGENTE: SCRAPER] Aplicando RAG consolidado sobre {len(textos_para_rag)} textos extensos...")
         contenido_rag = vectorizar_temporal(
             textos=textos_para_rag,
             query=f"datos ecológicos agrícolas polinizadores cultivos {region} México",
@@ -134,7 +134,7 @@ def scraper_node(state: ScrapingState) -> dict[str, Any]:
         )
     
     total_chars = sum(len(v) for v in contenidos.values()) + len(contenido_rag)
-    print(f"\n[🕷️ Scraper] Extracción completa. Total contenido: {total_chars:,} chars")
+    print(f"\n(^_^)/ [OK] [SCRAPER] Extracción completa. Total contenido: {total_chars:,} chars")
     
     return {
         "contenido_polinizadores": contenidos.get("polinizadores", ""),

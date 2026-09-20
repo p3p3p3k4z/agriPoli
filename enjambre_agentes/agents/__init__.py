@@ -1,1 +1,1 @@
-"""Agentes del enjambre AniIta y grafo LangGraph."""
+"""Agentes del sistema multiagente AgriPoli y grafo LangGraph."""

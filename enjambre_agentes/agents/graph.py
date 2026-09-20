@@ -1,5 +1,5 @@
 """
-Ensamblaje del Grafo LangGraph — Orquestación del enjambre AniIta.
+Ensamblaje del Grafo LangGraph — Orquestación del Sistema Multiagente AgriPoli.
 
 Conecta los 3 nodos (Investigador → Scraper → Sintetizador) en un flujo
 lineal usando StateGraph de LangGraph con checkpointing de memoria.
@@ -21,7 +21,7 @@ from agents.sintetizador import sintetizador_node
 
 
 def build_graph() -> StateGraph:
-    """Construye y compila el grafo del enjambre de agentes AniIta.
+    """Construye y compila el grafo del sistema multiagente AgriPoli.
     
     Flujo:
         START → investigador → scraper → sintetizador → END
@@ -51,16 +51,17 @@ def build_graph() -> StateGraph:
 
 
 # --- Instancia global del grafo (singleton) ---
-anita_graph = build_graph()
+agripoli_graph = build_graph()
+anita_graph = agripoli_graph  # Retrocompatibilidad
 
 
-def run_anita_stream(
+def run_agripoli_stream(
     region: str,
     thread_id: str,
     provider: str = "Gemini",
     llm_model_name: str | None = None,
 ) -> Any:
-    """Ejecuta el enjambre de agentes con streaming para monitoreo en tiempo real.
+    """Ejecuta el sistema multiagente con streaming para monitoreo en tiempo real.
     
     Args:
         region: Región de México a investigar (ej. "La Mixteca, Oaxaca").
@@ -93,11 +94,14 @@ def run_anita_stream(
     
     config = {"configurable": {"thread_id": thread_id}}
     
-    for event in anita_graph.stream(initial_state, config=config):
+    for event in agripoli_graph.stream(initial_state, config=config):
         yield event
 
 
-def run_anita(
+run_anita_stream = run_agripoli_stream  # Retrocompatibilidad
+
+
+def run_agripoli(
     region: str,
     thread_id: str,
     provider: str = "Gemini",
@@ -136,5 +140,8 @@ def run_anita(
     
     config = {"configurable": {"thread_id": thread_id}}
     
-    result = anita_graph.invoke(initial_state, config=config)
+    result = agripoli_graph.invoke(initial_state, config=config)
     return result
+
+
+run_anita = run_agripoli  # Retrocompatibilidad

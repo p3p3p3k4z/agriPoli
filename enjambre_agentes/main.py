@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AniIta — Enjambre de Agentes para Recolección Ecológica y Agrícola de México.
+AgriPoli — Sistema de Apoyo Multiagente para el Manejo Agrícola y Preservación de Polinizadores.
 
 Entry point CLI que ejecuta el pipeline completo:
   1. Investigador (Tavily) → Descubre URLs de fuentes mexicanas
@@ -22,13 +22,13 @@ from pathlib import Path
 from datetime import datetime
 
 from config.keys import validate_keys
-from agents.graph import run_anita
+from agents.graph import run_agripoli
 
 
 def main() -> None:
-    """Punto de entrada principal del CLI de AniIta."""
+    """Punto de entrada principal del CLI de AgriPoli."""
     parser = argparse.ArgumentParser(
-        description="AniIta — Enjambre de Agentes para datos ecológicos de México",
+        description="AgriPoli — Sistema de Apoyo Multiagente para el Manejo Agrícola y Preservación de Polinizadores",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
@@ -84,7 +84,7 @@ Ejemplos:
     try:
         validate_keys(*required_keys)
     except ValueError as e:
-        print(f"\n❌ Error de configuración: {e}", file=sys.stderr)
+        print(f"\n[X_X] [ERROR: CONFIGURACION] {e}", file=sys.stderr)
         sys.exit(1)
     
     # --- Configurar salida ---
@@ -100,7 +100,7 @@ Ejemplos:
     
     # --- Banner ---
     print("\n" + "=" * 70)
-    print("  🌱  AniIta — Enjambre de Agentes Ecológicos de México")
+    print("  (^-^) [AGRIPOLI] — Sistema de Apoyo Multiagente")
     print("=" * 70)
     print(f"  Región:    {args.region}")
     print(f"  Proveedor: {args.provider}" + (f" ({args.model})" if args.model else ""))
@@ -111,14 +111,14 @@ Ejemplos:
     
     # --- Ejecutar el enjambre ---
     try:
-        result = run_anita(
+        result = run_agripoli(
             region=args.region,
             thread_id=thread_id,
             provider=args.provider,
             llm_model_name=args.model,
         )
     except Exception as e:
-        print(f"\n❌ Error durante la ejecución del enjambre: {e}", file=sys.stderr)
+        print(f"\n[X_X] [ERROR: ENJAMBRE] {e}", file=sys.stderr)
         sys.exit(1)
     
     # --- Guardar JSON ---
@@ -134,13 +134,13 @@ Ejemplos:
             json.dump(datos, f, ensure_ascii=False, indent=2)
         
         print("\n" + "=" * 70)
-        print("  ✅ EXTRACCIÓN COMPLETADA")
+        print("  (^_^) [OK] EXTRACCION COMPLETADA")
         print("=" * 70)
         print(f"  Archivo: {output_path.absolute()}")
         print(f"  Tamaño:  {output_path.stat().st_size:,} bytes")
         
         # Resumen rápido del contenido
-        print(f"\n  📊 Resumen:")
+        print(f"\n  [._.] [RESUMEN]")
         print(f"     Región:         {datos.get('region', 'N/A')}")
         print(f"     Estado:         {datos.get('estado', 'N/A')}")
         print(f"     Polinizadores:  {len(datos.get('polinizadores', []))}")
@@ -149,16 +149,16 @@ Ejemplos:
         print(f"     Fuentes:        {len(datos.get('fuentes_consultadas', []))}")
         
         if errores:
-            print(f"\n  ⚠ Errores no fatales ({len(errores)}):")
+            print(f"\n  (¬_¬) [ALERTA: ERRORES NO FATALES] ({len(errores)}):")
             for e in errores[:5]:  # Mostrar máximo 5
-                print(f"     - {e}")
+                print(f"     * {e}")
             if len(errores) > 5:
                 print(f"     ... y {len(errores) - 5} más")
         
         print("=" * 70 + "\n")
         
     except json.JSONDecodeError as e:
-        print(f"\n⚠ El JSON generado tiene errores de formato: {e}", file=sys.stderr)
+        print(f"\n[X_X] [ALERTA: FORMATO JSON] {e}", file=sys.stderr)
         # Guardar el texto crudo de todos modos
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(json_str)

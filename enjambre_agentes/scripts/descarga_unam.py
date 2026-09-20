@@ -39,7 +39,7 @@ async def main():
         desc_ref="Base de datos de especímenes botánicos recolectados en todo México. Provee información crucial para identificar plantas nativas."
     )
     
-    print("\n✅ Descarga Masiva Finalizada.")
+    print("\n(^_^)/ [OK] Descarga Masiva Finalizada.")
     print(f"Los datos crudos se encuentran en: {data_dir}")
     print(f"Puedes consultar el libro de referencias bibliográficas en: {ref_file}")
 

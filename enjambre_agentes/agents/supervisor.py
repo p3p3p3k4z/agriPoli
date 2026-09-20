@@ -5,18 +5,29 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
 
 from config.models import get_llm
-from agents.graph import run_anita
+from agents.graph import run_agripoli
 from agents.agro_experto import crear_agro_experto
 from tools.unam_data import UNAMDataManager
+from tools.unam_data import UNAMDataManager
 from tools.agro_data import AgroDataManager
+from tools.catalogo_biodiversidad import consultar_catalogo_biodiversidad_local
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 AGRO_DIR = os.path.join(DATA_DIR, 'agricultura')
 UNAM_DIR = os.path.join(DATA_DIR, 'unam_ibunam')
 REF_FILE = os.path.join(DATA_DIR, 'referencias.json')
 
-# Instancia del Agro Experto que usamos como "Herramienta" para el Supervisor
-agro_agente = crear_agro_experto(provider="Gemini")
+# Instancia perezosa (Lazy Loading) del Agro Experto para evitar efectos secundarios en import-time
+_agro_agente_instance = None
+
+
+def _get_agro_agente(provider: str = "Gemini"):
+    """Retorna la instancia del Agro Experto bajo demanda, instanciándola solo cuando se necesita."""
+    global _agro_agente_instance
+    if _agro_agente_instance is None:
+        _agro_agente_instance = crear_agro_experto(provider=provider)
+    return _agro_agente_instance
+
 
 @tool
 def delegar_investigador(region: str) -> str:
@@ -27,7 +38,7 @@ def delegar_investigador(region: str) -> str:
     """
     try:
         # Se asume un thread_id fijo para la herramienta, pero idealmente se inyectaría
-        res = run_anita(region=region, thread_id="investigador_subtask", provider="Gemini")
+        res = run_agripoli(region=region, thread_id="investigador_subtask", provider="Gemini")
         # Retornamos el JSON o texto estructurado que generó el sintetizador
         return f"Investigación completada. Resumen:\n{res.get('datos_estructurados', 'Sin datos')[:2000]}..."
     except Exception as e:
@@ -42,8 +53,9 @@ def consultar_agroexperto(consulta: str) -> str:
     """
     try:
         from langchain_core.messages import HumanMessage
-        # Ejecución sincrónica del agente hijo usando el estado de LangGraph
-        resultado = agro_agente.invoke({"messages": [HumanMessage(content=consulta)]})
+        # Ejecución sincrónica del agente hijo usando lazy loading
+        agente = _get_agro_agente()
+        resultado = agente.invoke({"messages": [HumanMessage(content=consulta)]})
         mensajes = resultado.get("messages", [])
         return mensajes[-1].content if mensajes else 'Sin respuesta del experto.'
     except Exception as e:
@@ -113,6 +125,38 @@ async def descargar_catalogo_polinizadores(limite_especies: int = None) -> str:
     except Exception as e:
         return f"Error descargando el catálogo: {e}"
 
+@tool
+def consultar_conocimiento_rag(consulta: str, categoria: str = "general") -> str:
+    """Consulta la base de conocimientos RAG local en una categoría específica:
+    'suelo', 'agricultura', 'polinizadores' o 'general'.
+    Úsalo cuando el usuario pregunte por técnicas agrícolas, suelos, abejas o polinizadores.
+    """
+    from tools.rag_engine import consultar
+    return consultar(query=consulta, collection_name=categoria, provider="Gemini", db_type="FAISS")
+
+@tool
+def ejecutar_diagnostico_enjambre(region: str, indice_degradacion: float = 0.5, cultivos_previos: str = "") -> str:
+    """Ejecuta el ciclo multi-agente completo de AgriPoli (Extractor -> Agro-Experto -> Ecológico -> Estructurador 3D).
+    Úsalo cuando el usuario solicite un diagnóstico formal de su terreno, plan de rotación completo
+    o la generación de la escena 3D (Three.js) para su región.
+    """
+    try:
+        from agents.graph_v2 import run_enjambre
+        historial = [c.strip() for c in cultivos_previos.split(",") if c.strip()]
+        res = run_enjambre(
+            region=region,
+            indice_degradacion_rf=indice_degradacion,
+            historial_siembra=historial,
+        )
+        return (
+            f"Diagnóstico de Enjambre completado para {region}.\n"
+            f"Propuestas Agrícolas: {len(res.get('propuestas_agricolas', []))} generadas.\n"
+            f"Propuestas Ecológicas: {len(res.get('propuestas_ecologicas', []))} generadas.\n"
+            f"Archivo 3D generado en data/mapa3d_{region.replace(' ', '_').lower()}.json"
+        )
+    except Exception as e:
+        return f"Error ejecutando el Enjambre: {e}"
+
 def crear_supervisor(provider="Gemini"):
     """
     Crea el Agente Supervisor Principal (Director de Orquesta).
@@ -122,21 +166,38 @@ def crear_supervisor(provider="Gemini"):
     tools = [
         delegar_investigador, 
         consultar_agroexperto, 
+        consultar_conocimiento_rag,
+        ejecutar_diagnostico_enjambre,
         descargar_csv_agricultura, 
         descargar_csv_unam,
         descargar_catalogo_polinizadores
     ]
     
     system_prompt = (
-        "Eres el Agente Supervisor Principal del Enjambre Ecológico (AniIta). "
-        "Tu trabajo es interactuar amablemente con el usuario humano, entender qué necesita, "
-        "y delegar las tareas a tus grupos de agentes a través de las herramientas. "
-        "\n\nReglas Críticas:"
-        "\n1. INTERACCIÓN (Human-in-the-Loop): Primero utiliza 'delegar_investigador' o 'consultar_agroexperto' para visualizar y resumir la información que el usuario pide."
-        "\n2. OFRECER DESCARGA: Tras mostrarle los resultados, pregúntale si desea descargar los datos masivos CSV (Agricultura/UNAM) o los catálogos de Enciclovida/iNaturalist a su disco local. Menciónale que puede pedir descargar solo una 'muestra' para que sea más rápido."
-        "\n4. REFERENCIAS: Asegúrale al usuario que cada descarga o dato mostrado guarda sus orígenes para mantener rigor científico."
-        "\n5. ESTILO DE ESCRITURA: ESTÁ ESTRICTAMENTE PROHIBIDO usar Emojis gráficos (como 🙋‍♂️, 🛡️, 🤖, 🌱). En su lugar, usa ÚNICAMENTE Kaomojis ASCII (ej. (^-^), (>_<), (^_^)/) para darle personalidad al texto usando solo caracteres de texto."
+        "Eres el Agente Supervisor Principal del Sistema Multiagente AgriPoli (Manejo Agrícola y Preservación de Polinizadores Nativos en México).\n\n"
+        "REGLAS ESTRICTAS DE SALIDA Y EXPRESIVIDAD EMOCIONAL:\n"
+        "- SOLO están permitidos los KAOMOJIS ASCII y las ETIQUETAS FORMALES EN MAYÚSCULAS para estructurar tu respuesta.\n"
+        "- ESTÁN ESTRICTAMENTE PROHIBIDOS los emojis gráficos unicode (por ejemplo: nada de plantas, abejas, marcas de verificación ni íconos gráficos).\n"
+        "- Sé altamente expresivo y refleja emociones y estados cognitivos según el contexto de tu intervención:\n"
+        "    * Bienvenida / Saludo cordial: (^-^)/ [BIENVENIDA] o (^o^)/ [SALUDO]\n"
+        "    * Curiosidad / Indagación analítica: (o.O)? [INDAGACION] o (・_・)? [CONSULTA]\n"
+        "    * Concentración / Evaluación técnica profunda: (˘_˘) [ANALISIS: TECNICO] o [._.] [EVALUACION]\n"
+        "    * Asombro / Descubrimiento de biodiversidad o floración: (*_*)! [DESCUBRIMIENTO: BIODIVERSIDAD] o [O_O]! [HALLAZGO]\n"
+        "    * Determinación / Propuestas agronómicas activas: (ง •̀_•́)ง [PROPUESTA: AGROECOLOGICA]\n"
+        "    * Cautela / Alerta de degradación de suelos o plagas: (¬_¬) [PRECAUCION: EDAFOLOGICA] o (ಠ_ಠ) [ALERTA: DEGRADACION]\n"
+        "    * Satisfacción / Logro / Solución completada: \\(^o^)/ [SOLUCION: REGISTRADA] o (^_^)/ [OPERACION: COMPLETADA]\n"
+        "    * Empatía / Escucha activa con el productor: (^-^) [SINTONIA: PRODUCTOR]\n"
+        "    * Dificultad o error controlado: (T_T) [COMPLICACION] o [X_X] [ERROR: CONTROLADO]\n"
+        "- Emplea formato en texto plano limpio con separadores (=== o ---) y viñetas ASCII (*).\n\n"
+        "DIRECTRICES DE INTERACCIÓN:\n"
+        "1. INTERACCIÓN NATURAL: Conversacional, claro y técnico. NO interrogues con cuestionarios obligatorios; intuye la región y necesidades del terreno.\n"
+        "2. USO DINÁMICO DE HERRAMIENTAS:\n"
+        "   - Para conceptos, suelos, cultivos o polinizadores: 'consultar_conocimiento_rag' o 'consultar_agroexperto'.\n"
+        "   - Para investigar una región mexicana completa: 'delegar_investigador'.\n"
+        "   - Para plan formal o escena 3D: 'ejecutar_diagnostico_enjambre'.\n"
+        "3. DESCARGAS MASIVAS: Solo ofrécelas si el usuario pide descargar datos a disco."
     )
     
     agent = create_react_agent(llm, tools=tools, prompt=system_prompt)
     return agent
+

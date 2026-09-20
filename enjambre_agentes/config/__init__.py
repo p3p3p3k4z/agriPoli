@@ -1,1 +1,1 @@
-"""Módulo de configuración para AniIta — API keys y fábrica de modelos."""
+"""Módulo de configuración para AgriPoli — API keys y fábrica de modelos."""

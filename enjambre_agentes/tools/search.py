@@ -6,18 +6,35 @@ institucionales y científicas de México: CONABIO, SADER, iNaturalist,
 EncicloVida, UNAM, SciELO, INEGI, INIFAP.
 """
 from __future__ import annotations
+from typing import Any
 
 from langchain_core.tools import tool
-from langchain_community.tools.tavily_search import TavilySearchResults
+
+try:
+    from langchain_tavily import TavilySearch as TavilyToolClass
+except ImportError:
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        from langchain_community.tools.tavily_search import TavilySearchResults as TavilyToolClass
 
 from config.keys import TAVILY_API_KEY
 
 
-def _get_tavily(max_results: int = 5) -> TavilySearchResults:
-    """Obtiene una instancia de TavilySearchResults configurada."""
+def _get_tavily(max_results: int = 5):
+    """Obtiene una instancia de búsqueda Tavily configurada."""
     if not TAVILY_API_KEY:
         raise ValueError("Se requiere TAVILY_API_KEY en .env para realizar búsquedas.")
-    return TavilySearchResults(max_results=max_results, tavily_api_key=TAVILY_API_KEY)
+    return TavilyToolClass(max_results=max_results, tavily_api_key=TAVILY_API_KEY)
+
+
+def _extraer_resultados_tavily(res: Any) -> list[dict]:
+    """Extrae la lista de resultados tanto si Tavily devuelve dict como si devuelve list."""
+    if isinstance(res, dict) and "results" in res:
+        return res["results"]
+    if isinstance(res, list):
+        return res
+    return []
 
 
 @tool
@@ -47,7 +64,8 @@ def buscar_tavily_mexico(query: str, tema: str) -> str:
     
     tavily = _get_tavily(max_results=5)
     try:
-        resultados = tavily.invoke({"query": query_enriquecida})
+        raw_res = tavily.invoke({"query": query_enriquecida})
+        resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
         for r in resultados:
             url = r.get("url", "sin URL")
@@ -80,7 +98,8 @@ def buscar_conabio(query: str) -> str:
     
     tavily = _get_tavily(max_results=5)
     try:
-        resultados = tavily.invoke({"query": query_enriquecida})
+        raw_res = tavily.invoke({"query": query_enriquecida})
+        resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
         for r in resultados:
             url = r.get("url", "sin URL")
@@ -96,24 +115,25 @@ def buscar_conabio(query: str) -> str:
 
 @tool
 def buscar_literatura_agricola(query: str) -> str:
-    """Busca información agrícola en repositorios de SAGARPA/SADER, INIFAP,
-    SciELO México y revistas de la UNAM.
+    """Busca información agrícola en repositorios oficiales de SADER/SAGARPA, INIFAP,
+    SciELO México y revistas de la UNAM / Chapingo.
     
     Ideal para: datos de cultivos, rendimientos, prácticas agrícolas,
-    suelos, tecnificación, agroecología.
+    suelos, fertilización, agroecología.
     
     Args:
         query: Consulta agrícola (ej. 'cultivos milpa Mixteca rendimiento').
     """
     query_enriquecida = (
         f"{query} México agricultura "
-        f"site:gob.mx/sader OR site:inifap.gob.mx OR site:scielo.org.mx OR "
-        f"site:revistas.unam.mx OR site:chapingo.mx"
+        f"site:gob.mx/agricultura OR site:gob.mx/sader OR site:inifap.gob.mx OR "
+        f"site:scielo.org.mx OR site:revistas.unam.mx OR site:chapingo.mx"
     )
     
     tavily = _get_tavily(max_results=5)
     try:
-        resultados = tavily.invoke({"query": query_enriquecida})
+        raw_res = tavily.invoke({"query": query_enriquecida})
+        resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
         for r in resultados:
             url = r.get("url", "sin URL")
@@ -125,6 +145,39 @@ def buscar_literatura_agricola(query: str) -> str:
         return texto
     except Exception as e:
         return f"Error en búsqueda agrícola: {e}"
+
+
+@tool
+def buscar_estudios_suelo(query: str) -> str:
+    """Busca estudios de suelos, técnicas de muestreo, perfiles edafológicos,
+    texturas y fertilidad directamente en fuentes oficiales de México (SADER, INIFAP, INEGI).
+    
+    Ideal para: requerimientos de muestreo con barrena, análisis químico NPK,
+    salinidad, pH, enmiendas orgánicas y degradación del suelo.
+    
+    Args:
+        query: Consulta edafológica (ej. 'estudios de suelos muestreo barrena SADER').
+    """
+    query_enriquecida = (
+        f"{query} México suelo edafología "
+        f"site:gob.mx/agricultura OR site:inifap.gob.mx OR site:inegi.org.mx OR site:gob.mx/semarnat"
+    )
+    
+    tavily = _get_tavily(max_results=5)
+    try:
+        raw_res = tavily.invoke({"query": query_enriquecida})
+        resultados = _extraer_resultados_tavily(raw_res)
+        texto = ""
+        for r in resultados:
+            url = r.get("url", "sin URL")
+            contenido = r.get("content", "sin contenido")
+            texto += f"[Suelo/Edafología MX] URL: {url}\nContenido: {contenido}\n\n---\n\n"
+        
+        if not texto.strip():
+            return f"No se encontraron estudios de suelo para: '{query}'."
+        return texto
+    except Exception as e:
+        return f"Error en búsqueda de suelos: {e}"
 
 
 @tool
@@ -202,7 +255,8 @@ def buscar_datos_unam(query: str) -> str:
     
     tavily = _get_tavily(max_results=5)
     try:
-        resultados = tavily.invoke({"query": query_enriquecida})
+        raw_res = tavily.invoke({"query": query_enriquecida})
+        resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
         for r in resultados:
             url = r.get("url", "sin URL")

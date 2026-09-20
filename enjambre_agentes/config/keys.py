@@ -1,12 +1,12 @@
 """
-Gestión centralizada de API keys para AniIta.
+Gestión centralizada de API keys para el Sistema Multiagente AgriPoli.
 Carga las variables de entorno desde el archivo .env en la raíz del proyecto.
 """
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Cargar .env desde la raíz del proyecto AniIta
+# Cargar .env desde la raíz del proyecto AgriPoli
 _project_root = Path(__file__).resolve().parent.parent
 load_dotenv(_project_root / ".env")
 
@@ -15,7 +15,12 @@ GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
 TAVILY_API_KEY: str | None = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY")
 COHERE_API_KEY: str | None = os.getenv("COHERE_API_KEY")
+HF_TOKEN: str | None = os.getenv("HF_TOKEN")
+PINECONE_API_KEY: str | None = os.getenv("PINECONE_API_KEY")
 INEGI_API_TOKEN: str | None = os.getenv("INEGI_API_TOKEN")
+LANGSMITH_API_KEY: str | None = os.getenv("LANGSMITH_API_KEY")
+EMAIL_SENDER: str | None = os.getenv("EMAIL_SENDER")
+EMAIL_PASSWORD: str | None = os.getenv("EMAIL_PASSWORD")
 
 
 def validate_keys(*required_keys: str) -> None:
@@ -32,6 +37,9 @@ def validate_keys(*required_keys: str) -> None:
         "TAVILY_API_KEY": TAVILY_API_KEY,
         "GROQ_API_KEY": GROQ_API_KEY,
         "COHERE_API_KEY": COHERE_API_KEY,
+        "HF_TOKEN": HF_TOKEN,
+        "PINECONE_API_KEY": PINECONE_API_KEY,
+        "INEGI_API_TOKEN": INEGI_API_TOKEN,
     }
     missing = [k for k in required_keys if not key_map.get(k)]
     if missing:

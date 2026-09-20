@@ -14,7 +14,7 @@ from operator import add
 
 
 class ScrapingState(TypedDict):
-    """Estado compartido del enjambre de agentes AniIta.
+    """Estado compartido del sistema multiagente AgriPoli.
     
     Flujo de datos:
         1. Investigador escribe: urls_descubiertas

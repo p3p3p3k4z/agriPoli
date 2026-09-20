@@ -18,7 +18,7 @@ async def main():
         return
 
     print("=" * 70)
-    print(" [x_x] Supervisor de AniIta (Human-in-the-Loop) ")
+    print(" [x_x] Supervisor Multiagente AgriPoli (Human-in-the-Loop) ")
     print("=" * 70)
     print("Hola, soy tu Supervisor de Orquesta. Tengo bajo mi mando a:")
     print(" - (O_O) El Enjambre WebScraper (Investigador)")

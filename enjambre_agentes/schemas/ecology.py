@@ -3,7 +3,7 @@ Modelos Pydantic para la salida JSON estructurada del Enjambre de Agentes.
 
 Estos schemas definen la estructura rigurosa de los datos ecológicos, geográficos
 y agrícolas recolectados para cada región de México. Son consumidos por el sistema
-Añi Ita para proyectar "islas de polinizadores" y recomendar cultivos.
+AgriPoli para proyectar "islas de polinizadores" y recomendar cultivos.
 
 El Nodo Sintetizador usa `with_structured_output(DatosRegion)` para forzar
 que el LLM produzca JSON válido conforme a estos schemas.
@@ -208,7 +208,7 @@ class DatosRegion(BaseModel):
     """Schema raíz: Datos ecológicos, agrícolas y geográficos completos de una región de México.
     
     Este modelo es el output final del Enjambre de Agentes y es consumido
-    directamente por el sistema Añi Ita para modelado 3D y análisis predictivo.
+    directamente por el sistema AgriPoli para modelado 3D y análisis predictivo.
     """
 
     region: str = Field(

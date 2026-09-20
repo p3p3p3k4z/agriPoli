@@ -1,10 +1,11 @@
 [project]
 name = "enjambre-agentes"
 version = "0.1.0"
-description = "Enjambre de Agentes para Recolección Ecológica y Agrícola de México"
+description = "Sistema de Apoyo Multiagente para el Manejo Agrícola y Preservación de Polinizadores (AgriPoli)"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    # Ecosistema LangChain
     "langchain",
     "langchain-core",
     "langchain-community",
@@ -12,24 +13,60 @@ dependencies = [
     "langchain-text-splitters",
     "langchain-experimental",
     "langchain-huggingface",
+    "langchain-ollama",
+    "langchain-pinecone",
     "langchain-groq>=0.1.5",
     "langchain-cohere>=0.1.7",
+    "langchain-tavily",
+    "langchain-chroma>=1.1.0",
+    
+    # LangGraph
     "langgraph",
-    "INEGIpy>=1.1.2",
+    
+    # Proveedores e IA
     "google-generativeai",
     "faiss-cpu",
+    "torch",
+    "torchvision",
+    "transformers",
+    "huggingface-hub",
+    "ollama",
+    "sentence-transformers",
     "tavily-python",
     "groq",
     "cohere",
-    "playwright",
-    "beautifulsoup4",
-    "lxml",
+    "chromadb>=1.5.9",
+    "pinecone",
+    
+    # Web Scraping y Procesamiento
     "pypdf",
+    "pymupdf",
+    "beautifulsoup4",
+    "bs4",
+    "unstructured",
+    "unstructured-client",
+    "lxml",
+    "arxiv",
+    "wikipedia",
+    "selenium",
+    "webdriver-manager",
+    "playwright",
+    
+    # Matemáticas
+    "sympy",
+    "numpy",
+    "pandas",
+    
+    # Utilidades y Entorno
     "python-dotenv",
-    "pydantic",
+    "ipython",
     "requests",
     "aiohttp",
-    "aiofiles"
+    "aiofiles",
+    "pydantic",
+    
+    # Propios del Proyecto
+    "INEGIpy>=1.1.2"
 ]
 
 [[tool.uv.index]]

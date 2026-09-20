@@ -62,6 +62,15 @@ def crear_agro_experto(provider="Gemini"):
     manager = AgroDataManager(data_dir=DATA_DIR)
     
     @tool
+    def consultar_manuales_usda(query: str) -> str:
+        """
+        Consulta la memoria RAG de manuales tecnicos (SADER/USDA) para buscar
+        practicas de descompactacion, rotacion de nitrogeno y agricultura regenerativa.
+        """
+        from tools.rag_engine import consultar
+        return consultar(query=query, collection_name="agricultura", provider=provider)
+    
+    @tool
     def buscar_monografias_dgsiap(cultivo: str) -> str:
         """
         Busca y extrae la información de la monografía oficial de SADER/SIAP para un cultivo específico.
@@ -116,16 +125,31 @@ def crear_agro_experto(provider="Gemini"):
         return manager.scraping_dinamico_sader(query)
     
     from tools.inegi_client import consultar_indicador_inegi, usar_inegipy_catalogo
-    tools = [consultar_base_agricola_local, buscar_sader_web, buscar_monografias_dgsiap, buscar_literatura_agricola, consultar_indicador_inegi, usar_inegipy_catalogo]
+    tools = [
+        consultar_base_agricola_local, 
+        consultar_manuales_usda, 
+        buscar_sader_web, 
+        buscar_monografias_dgsiap, 
+        buscar_literatura_agricola, 
+        consultar_indicador_inegi, 
+        usar_inegipy_catalogo
+    ]
     
     system_prompt = (
-        "Eres un experto agrónomo en el Enjambre de Agentes. Tu rol es responder consultas "
-        "sobre qué se siembra en las distintas regiones de México, y las temporadas o ciclos agrícolas. "
-        "Siempre consulta PRIMERO la base de datos agrícola local ('consultar_base_agricola_local'). "
-        "Si la base de datos local no tiene la información, utiliza 'buscar_monografias_dgsiap' para extraer PDFs "
-        "de monografías oficiales del gobierno, o 'buscar_sader_web' / 'buscar_literatura_agricola' para otras fuentes. "
-        "Para estadísticas socioeconómicas y del sector agropecuario, PUEDES usar 'consultar_indicador_inegi'. "
-        "Si no conoces el ID del indicador de INEGI, utiliza 'usar_inegipy_catalogo' o busca en internet el ID."
+        "Eres el Agente Agrícola (El Consultor de Cultivos) del Sistema Multiagente AgriPoli.\n"
+        "Tu responsabilidad es decidir qué sembrar y cómo rotar cultivos funcionales para sanar la tierra.\n\n"
+        "REGLAS DE SALIDA Y EMOCIONES:\n"
+        "- SOLO están permitidos los KAOMOJIS ASCII y las ETIQUETAS FORMALES EN MAYÚSCULAS en tu salida.\n"
+        "- CERO emojis gráficos unicode.\n"
+        "- Refleja emociones acordes a tu análisis agronómico:\n"
+        "    * Análisis de suelo / Pensamiento: (˘_˘) [ANALISIS: SUELO] o [._.] [EDAFOLOGIA]\n"
+        "    * Determinación agronómica: (ง •̀_•́)ง [PROPUESTA: CULTIVOS]\n"
+        "    * Cautela ante degradación o plagas: (¬_¬) [PRECAUCION: NITROGENO] o (ಠ_ಠ) [ALERTA: MONOCULTIVO]\n"
+        "    * Satisfacción / Entrega técnica: (^_^)/ [RECOMENDACION: REGENERATIVA]\n\n"
+        "METODOLOGÍA:\n"
+        "- SIEMPRE usa 'consultar_manuales_usda' para basar tus decisiones en prácticas de regeneración y taxonomía de suelos.\n"
+        "- Revisa el historial de siembra y el tipo de suelo (proveído en el contexto) para elegir una rotación que recupere nitrógeno.\n"
+        "- También puedes usar 'buscar_monografias_dgsiap' y bases locales para datos de SADER en México."
     )
     
     agent = create_react_agent(llm, tools=tools, prompt=system_prompt)

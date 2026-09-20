@@ -26,7 +26,7 @@ PROMPT_SISTEMA = """Eres un ecólogo, agrónomo y biólogo experto en México, c
 de la biodiversidad, agricultura y geografía del país. Tu tarea es sintetizar datos 
 recopilados de múltiples fuentes web en un JSON estructurado y riguroso.
 
-ERES PARTE DEL SISTEMA "Añi Ita" QUE PROYECTA "ISLAS DE POLINIZADORES" Y RECOMIENDA CULTIVOS.
+ERES PARTE DEL SISTEMA INTERACTIVO INTELIGENTE PARA EL MANEJO AGRÍCOLA Y PRESERVACIÓN DE POLINIZADORES (AGRIPOLI) QUE PROYECTA "ISLAS DE POLINIZADORES" Y RECOMIENDA CULTIVOS.
 
 REGLAS ESTRICTAS:
 1. Solo incluye datos que estén RESPALDADOS por el contenido proporcionado.
@@ -78,8 +78,8 @@ def sintetizador_node(state: ScrapingState) -> dict[str, Any]:
     model_name = state.get("llm_model_name")
     
     print(f"\n{'='*60}")
-    print(f"[🧠 Sintetizador] Procesando datos para: {region}")
-    print(f"[🧠 Sintetizador] Generando JSON estructurado con {provider}...")
+    print(f"(˘_˘) [AGENTE: SINTETIZADOR] Procesando datos para: {region}")
+    print(f"(˘_˘) [AGENTE: SINTETIZADOR] Generando JSON estructurado con {provider}...")
     print(f"{'='*60}")
     
     llm = get_llm(provider, model_name, temperature=0.1)
@@ -105,7 +105,7 @@ def sintetizador_node(state: ScrapingState) -> dict[str, Any]:
     
     # --- Intento 1: with_structured_output ---
     try:
-        print("[🧠 Sintetizador] Intentando with_structured_output(DatosRegion)...")
+        print("[._.] [AGENTE: SINTETIZADOR] Intentando with_structured_output(DatosRegion)...")
         structured_llm = llm.with_structured_output(DatosRegion)
         resultado: DatosRegion = structured_llm.invoke(messages)
         
@@ -121,12 +121,12 @@ def sintetizador_node(state: ScrapingState) -> dict[str, Any]:
         n_flora = len(resultado.flora_nativa)
         n_fuentes = len(resultado.fuentes_consultadas)
         
-        print(f"\n[🧠 Sintetizador] ✅ JSON generado exitosamente:")
-        print(f"  Polinizadores: {n_polinizadores}")
-        print(f"  Cultivos: {n_cultivos}")
-        print(f"  Flora nativa: {n_flora}")
-        print(f"  Fuentes: {n_fuentes}")
-        print(f"  Tamaño JSON: {len(json_str):,} bytes")
+        print(f"\n(^_^) [OK] [SINTETIZADOR] JSON generado exitosamente:")
+        print(f"  * Polinizadores: {n_polinizadores}")
+        print(f"  * Cultivos: {n_cultivos}")
+        print(f"  * Flora nativa: {n_flora}")
+        print(f"  * Fuentes: {n_fuentes}")
+        print(f"  * Tamaño JSON: {len(json_str):,} bytes")
         
         return {
             "datos_estructurados": json_str,
@@ -135,53 +135,43 @@ def sintetizador_node(state: ScrapingState) -> dict[str, Any]:
         
     except Exception as e:
         error_msg = f"Sintetizador: Error en structured_output: {e}"
-        print(f"[🧠 Sintetizador] ⚠ {error_msg}")
+        print(f"(¬_¬) [ALERTA: SINTETIZADOR] {error_msg}")
         errores.append(error_msg)
     
     # --- Intento 2: Fallback a generación de texto + parsing ---
     try:
-        print("[🧠 Sintetizador] Fallback: generando texto + parsing manual...")
+        print("[._.] [AGENTE: SINTETIZADOR] Fallback: generando texto + parsing manual...")
         
         fallback_prompt = prompt_usuario + (
-            "\n\nIMPORTANTE: Responde ÚNICAMENTE con un JSON válido que siga "
-            "exactamente el schema DatosRegion. Sin texto adicional, sin markdown, "
-            "sin ```json. Solo el JSON puro."
+            "\n\nIMPORTANTE: Responde ÚNICAMENTE con el objeto JSON válido que cumpla con el schema DatosRegion. "
+            "No incluyas markdown, ni bloques ```json, ni explicaciones adicionales. Solo el JSON crudo."
         )
         
-        messages_fallback = [
+        response = llm.invoke([
             SystemMessage(content=PROMPT_SISTEMA),
             HumanMessage(content=fallback_prompt),
-        ]
+        ])
         
-        response = llm.invoke(messages_fallback)
+        # Limpiar posibles bloques markdown si el modelo los incluyó
+        texto = response.content.strip()
+        if texto.startswith("```json"):
+            texto = texto[7:]
+        elif texto.startswith("```"):
+            texto = texto[3:]
+        if texto.endswith("```"):
+            texto = texto[:-3]
+        texto = texto.strip()
         
-        # Extraer contenido de la respuesta
-        if isinstance(response.content, list):
-            text = "".join(
-                b.get("text", "") if isinstance(b, dict) else str(b)
-                for b in response.content
-            )
-        else:
-            text = str(response.content)
+        # Validar con Pydantic
+        parsed = json.loads(texto)
+        resultado = DatosRegion(**parsed)
         
-        # Limpiar posibles wrappers de markdown
-        text = text.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
-        
-        # Validar contra Pydantic
-        resultado = DatosRegion.model_validate_json(text)
         if not resultado.fecha_extraccion:
             resultado.fecha_extraccion = fecha_hoy
             
         json_str = resultado.model_dump_json(indent=2, exclude_none=False)
         
-        print(f"[🧠 Sintetizador] ✅ JSON generado via fallback ({len(json_str):,} bytes)")
+        print(f"(^_^) [OK] [SINTETIZADOR] JSON generado via fallback ({len(json_str):,} bytes)")
         
         return {
             "datos_estructurados": json_str,
@@ -190,7 +180,7 @@ def sintetizador_node(state: ScrapingState) -> dict[str, Any]:
         
     except Exception as e2:
         error_msg2 = f"Sintetizador: Error en fallback: {e2}"
-        print(f"[🧠 Sintetizador] ✗ {error_msg2}")
+        print(f"[X_X] [ERROR: SINTETIZADOR] {error_msg2}")
         errores.append(error_msg2)
         
         # Generar un JSON mínimo de emergencia

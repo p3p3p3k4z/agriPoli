@@ -15,18 +15,18 @@ async def main():
         print(f"Error de configuración: {e}")
         return
 
-    print("=== Consola de Consulta Agrícola (Enjambre AniIta) ===")
+    print("=== Consola de Consulta Agrícola (Sistema Multiagente AgriPoli) ===")
     print("Este agente consultará primero los JSON locales descargados de SADER/SIAP.")
     print("Si no encuentra la información, buscará dinámicamente en internet.\n")
     
     agente = crear_agro_experto(provider="Gemini")
     
     while True:
-        consulta = input("\n🌱 ¿Qué deseas saber sobre la agricultura en México? (o 'salir'): ")
+        consulta = input("\n(^-^) [CONSULTA] ¿Qué deseas saber sobre la agricultura en México? (o 'salir'): ")
         if consulta.lower() in ['salir', 'exit', 'quit']:
             break
             
-        print("\n🔍 Consultando al experto agrícola...\n")
+        print("\n(˘_˘) [AGRO-EXPERTO] Consultando al experto agrícola...\n")
         
         try:
             respuesta = await agente.ainvoke({"input": consulta})
