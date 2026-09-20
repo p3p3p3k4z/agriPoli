@@ -12,45 +12,21 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from tools.gbif_client import enrich_with_gbif
 
 
+from tools.descargador_masivo import DescargadorMasivoAsync
+
 # Configuracion
 BASE_URL = "https://enciclovida.mx"
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'descargas_masivas'))
 MAX_CONCURRENCY = 5
 DELAY = 1.0 # Respeto a los servidores de CONABIO
 
-async def fetch_html(session, url):
-    async with session.get(url) as response:
-        response.raise_for_status()
-        return await response.text()
-
-async def download_file(session, url, dest_path, desc="Archivo"):
-    if os.path.exists(dest_path):
-        print(f"  [Skip] {desc} ya existe en {os.path.basename(dest_path)}")
-        return True
-        
-    try:
-        async with session.get(url) as response:
-            if response.status == 200:
-                print(f"  [Descargando] {desc} -> {os.path.basename(dest_path)}")
-                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-                async with aiofiles.open(dest_path, 'wb') as f:
-                    while True:
-                        chunk = await response.content.read(4096)
-                        if not chunk:
-                            break
-                        await f.write(chunk)
-                return True
-            else:
-                print(f"  [No Encontrado] {desc} (HTTP {response.status}) en {url}")
-                return False
-    except Exception as e:
-        print(f"  [Error] Fallo al descargar {desc} de {url}: {e}")
-        return False
+# Instancia del descargador
+descargador = DescargadorMasivoAsync(max_concurrencia=MAX_CONCURRENCY, delay_segundos=DELAY)
 
 async def obtener_catalogo(session, tipo_polinizador="plantas_meliferas"):
     url = f"{BASE_URL}/polinizadores?tipo_polinizador={tipo_polinizador}&por_pagina=5000&pagina=1"
     print(f"Obteniendo catálogo de {tipo_polinizador} desde {url}...")
-    html = await fetch_html(session, url)
+    html = await descargador.fetch_html(session, url)
     soup = BeautifulSoup(html, 'html.parser')
     
     links = []
@@ -104,7 +80,7 @@ async def procesar_especie(session, href, semaphore, tipo, use_gbif=False):
                         
                 if not scientific_name:
                     url_especie = f"{BASE_URL}{href}"
-                    html = await fetch_html(session, url_especie)
+                    html = await descargador.fetch_html(session, url_especie)
                     soup = BeautifulSoup(html, 'html.parser')
                     # Intentar buscar el <i> principal dentro del header h1
                     h1 = soup.find('h1')
@@ -135,17 +111,16 @@ async def procesar_especie(session, href, semaphore, tipo, use_gbif=False):
             print(f"  [GBIF Error] Fallo al enriquecer {especie_id}: {e}")
             return
 
-        
-    async with semaphore:
+    async with descargador.semaphore:
         url_especie = f"{BASE_URL}{href}"
         try:
             print(f"[{tipo.upper()}] Procesando ID {especie_id}...")
-            html = await fetch_html(session, url_especie)
+            html = await descargador.fetch_html(session, url_especie)
             soup = BeautifulSoup(html, 'html.parser')
             
             # JSON observaciones
             url_json = f"{BASE_URL}/especies/{especie_id}/consulta-registros.json?coleccion=naturalista&formato=json"
-            await download_file(session, url_json, os.path.join(especie_dir, 'observaciones.json'), desc="JSON Observaciones")
+            await descargador.download_file(session, url_json, os.path.join(especie_dir, 'observaciones.json'), desc="JSON Observaciones")
             
             # Archivos de mapa y metadata
             snib_url = None
@@ -153,7 +128,7 @@ async def procesar_especie(session, href, semaphore, tipo, use_gbif=False):
                 if '/descarga-mapa/' in a['href']:
                     map_url = f"{BASE_URL}{a['href']}"
                     map_filename = a['href'].split('/')[-1] + '.zip'
-                    await download_file(session, map_url, os.path.join(especie_dir, 'mapas', map_filename), desc="Mapa ZIP")
+                    await descargador.download_file(session, map_url, os.path.join(especie_dir, 'mapas', map_filename), desc="Mapa ZIP")
                     
                 if 'snibgeoportal' in a['href']:
                     snib_url = a['href']
@@ -194,7 +169,6 @@ async def procesar_especie(session, href, semaphore, tipo, use_gbif=False):
 
 async def main(tipo="plantas_meliferas", limit=None, use_gbif=False):
     os.makedirs(DATA_DIR, exist_ok=True)
-    semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
     
     async with aiohttp.ClientSession() as session:
         especies = await obtener_catalogo(session, tipo)
@@ -206,7 +180,7 @@ async def main(tipo="plantas_meliferas", limit=None, use_gbif=False):
         if limit:
             especies = especies[:limit]
             
-        tasks = [procesar_especie(session, e, semaphore, tipo, use_gbif) for e in especies]
+        tasks = [procesar_especie(session, e, descargador.semaphore, tipo, use_gbif) for e in especies]
         await asyncio.gather(*tasks)
         
 if __name__ == "__main__":

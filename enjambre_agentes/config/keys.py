@@ -15,6 +15,7 @@ GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
 TAVILY_API_KEY: str | None = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY")
 COHERE_API_KEY: str | None = os.getenv("COHERE_API_KEY")
+INEGI_API_TOKEN: str | None = os.getenv("INEGI_API_TOKEN")
 
 
 def validate_keys(*required_keys: str) -> None:

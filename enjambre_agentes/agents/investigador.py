@@ -18,7 +18,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 from agents.state import ScrapingState
 from config.models import get_llm
-from tools.search import buscar_tavily_mexico, buscar_conabio, buscar_literatura_agricola, explorador_enciclovida
+from tools.search import buscar_tavily_mexico, buscar_conabio, buscar_literatura_agricola, explorador_enciclovida, buscar_datos_unam
 
 
 # --- Schema para generar consultas de búsqueda optimizadas ---
@@ -55,15 +55,17 @@ información científica y gubernamental sobre los siguientes temas:
 
 1. **Polinizadores**: Abejas, mariposas, colibríes, murciélagos nativos de la región.
    Prioriza términos como "polinizadores nativos", "abejas meliponas", "NOM-059".
+   Asegúrate de incluir al menos una consulta con la palabra "UNAM" o "IBUNAM" (ej. "polinizadores UNAM").
    
 2. **Agricultura**: Cultivos tradicionales y comerciales, rendimientos, ciclos agrícolas.
-   Prioriza términos como "milpa", "cultivos temporalidad", "SAGARPA", "INIFAP".
+   Prioriza términos como "milpa", "cultivos temporalidad", "SAGARPA", "INIFAP", "INEGI".
    
 3. **Clima**: Clasificación climática, precipitación, temperatura, riesgos.
    Prioriza términos como "clima Köppen", "precipitación anual", "SMN CONAGUA".
    
 4. **Flora**: Vegetación nativa, especies endémicas, plantas nectaríferas y melíferas.
    Prioriza términos como "flora endémica", "vegetación", "CONABIO".
+   Asegúrate de incluir al menos una consulta con la palabra "UNAM" o "IBUNAM" (ej. "flora nativa IBUNAM").
    
 5. **Suelo**: Tipos de suelo, pH, materia orgánica, problemas edafológicos.
    Prioriza términos como "edafología", "tipo suelo", "INEGI carta edafológica".
@@ -191,7 +193,11 @@ def investigador_node(state: ScrapingState) -> dict[str, Any]:
             try:
                 # Usar herramienta especializada según categoría
                 if categoria == "polinizadores" or categoria == "flora":
-                    resultado = buscar_conabio.invoke({"query": query})
+                    # Alternamos entre CONABIO y UNAM para más riqueza
+                    if "UNAM" in query.upper() or "IBUNAM" in query.upper():
+                        resultado = buscar_datos_unam.invoke({"query": query})
+                    else:
+                        resultado = buscar_conabio.invoke({"query": query})
                 elif categoria == "agricultura":
                     resultado = buscar_literatura_agricola.invoke({"query": query})
                 else:

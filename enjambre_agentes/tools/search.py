@@ -183,3 +183,34 @@ def explorador_enciclovida(query: str) -> str:
         
     except Exception as e:
         return f"Error consultando API de Enciclovida: {e}"
+
+@tool
+def buscar_datos_unam(query: str) -> str:
+    """Búsqueda especializada en el Portal de Datos Abiertos de la UNAM, 
+    Instituto de Biología (IBUNAM) y repositorios académicos de la UNAM.
+    
+    Ideal para: colecciones de insectos polinizadores, herbarios, registros 
+    biológicos científicos y catálogos florísticos.
+    
+    Args:
+        query: Consulta sobre biodiversidad (ej. 'colección nacional insectos polinizadores', 'herbario MEXU').
+    """
+    query_enriquecida = (
+        f"{query} "
+        f"site:datosabiertos.unam.mx OR site:ib.unam.mx OR site:datos.ib.unam.mx"
+    )
+    
+    tavily = _get_tavily(max_results=5)
+    try:
+        resultados = tavily.invoke({"query": query_enriquecida})
+        texto = ""
+        for r in resultados:
+            url = r.get("url", "sin URL")
+            contenido = r.get("content", "sin contenido")
+            texto += f"[UNAM/DatosAbiertos] URL: {url}\nContenido: {contenido}\n\n---\n\n"
+        
+        if not texto.strip():
+            return f"No se encontraron datos en la UNAM para: '{query}'."
+        return texto
+    except Exception as e:
+        return f"Error en búsqueda UNAM: {e}"
