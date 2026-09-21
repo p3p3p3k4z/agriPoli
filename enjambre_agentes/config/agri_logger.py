@@ -60,19 +60,19 @@ def _fmt(tag: str, kaomoji: str, msg: str, color: str = "") -> str:
 def log_agente(agente: str, msg: str, kaomoji: str = "(o_o)"):
     """Registra la actividad y estado emocional de un agente principal."""
     tag = f"[AGENTE: {agente.upper()}]"
-    print(_fmt(tag, kaomoji, msg, CYAN))
+    print(_fmt(tag, kaomoji, msg, CYAN), flush=True)
 
 
 def log_mini_agente(nombre: str, msg: str, kaomoji: str = "(O_O)"):
     """Registra la actividad de un mini-agente o worker paralelo."""
     tag = f"[MINI-AGENTE: {nombre.upper()}]"
-    print(_fmt(tag, kaomoji, msg, MAGENTA))
+    print(_fmt(tag, kaomoji, msg, MAGENTA), flush=True)
 
 
 def log_herramienta(nombre: str, msg: str, kaomoji: str = "(>_<)"):
     """Registra la invocación o retorno de una herramienta."""
     tag = f"[HERRAMIENTA: {nombre}]"
-    print(_fmt(tag, kaomoji, msg, YELLOW))
+    print(_fmt(tag, kaomoji, msg, YELLOW), flush=True)
 
 
 def log_flujo(origen: str, destino: str, detalle: str = "", kaomoji: str = "[>_<]"):
@@ -82,32 +82,32 @@ def log_flujo(origen: str, destino: str, detalle: str = "", kaomoji: str = "[>_<
         msg = f"{origen} -> {destino} ({detalle})"
     else:
         msg = f"{origen} -> {destino}"
-    print(_fmt(tag, kaomoji, msg, GREEN))
+    print(_fmt(tag, kaomoji, msg, GREEN), flush=True)
 
 
 def log_emocion(agente: str, emocion: str, msg: str):
     """Registra un cambio de estado emocional formal del agente."""
     kaomoji = KAOMOJIS_EMOCIONES.get(emocion.upper(), "(o_o)")
     tag = f"[AGENTE: {agente.upper()}] [{emocion.upper()}]"
-    print(_fmt(tag, kaomoji, msg, CYAN))
+    print(_fmt(tag, kaomoji, msg, CYAN), flush=True)
 
 
 def log_ok(msg: str, kaomoji: str = "(^_^)/"):
     """Registra una operación exitosa o logro."""
-    print(_fmt("[OK]", kaomoji, msg, GREEN))
+    print(_fmt("[OK]", kaomoji, msg, GREEN), flush=True)
 
 
 def log_info(msg: str, kaomoji: str = "(o_o)"):
     """Registra información general del sistema."""
-    print(_fmt("[INFO]", kaomoji, msg, CYAN))
+    print(_fmt("[INFO]", kaomoji, msg, CYAN), flush=True)
 
 
 def log_alerta(msg: str, kaomoji: str = "(¬_¬)"):
     """Registra una advertencia o cautela técnica."""
-    print(_fmt("[ALERTA]", kaomoji, msg, YELLOW))
+    print(_fmt("[ALERTA]", kaomoji, msg, YELLOW), flush=True)
 
 
 def log_error(msg: str, kaomoji: str = "[X_X]"):
     """Registra un error controlado."""
-    print(_fmt("[ERROR]", kaomoji, msg, RED))
+    print(_fmt("[ERROR]", kaomoji, msg, RED), flush=True)
 

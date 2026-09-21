@@ -252,8 +252,50 @@ def _load_documents_for_collection(collection_name: str) -> list[Document]:
         except Exception as e:
             print(f"[RAG] Error cargando CSV {file_path.name}: {e}")
 
+    # 4. Archivos y datos desde el repositorio regional (data/regiones/*/*/)
+    regiones_dir = Path(__file__).resolve().parent.parent / "data" / "regiones"
+    if regiones_dir.exists():
+        for reg_dir in regiones_dir.glob("*/*"):
+            # A. Diagnosticos y datos relevantes regionales
+            diag_file = reg_dir / "diagnostico.md"
+            if diag_file.exists() and col in ("general", "agricultura"):
+                try:
+                    loader = TextLoader(str(diag_file), encoding="utf-8")
+                    docs.extend(loader.load())
+                except Exception:
+                    pass
+
+            # B. Fuentes locales clasificadas (PDFs, Markdown de HTMLs y CSVs)
+            fuentes_dir = reg_dir / "fuentes"
+            if fuentes_dir.exists():
+                # PDFs (filtrando atlas mayores a 10MB para lectura agil)
+                for file_path in fuentes_dir.glob("pdf/*.pdf"):
+                    try:
+                        if file_path.stat().st_size > 10 * 1024 * 1024:
+                            continue
+                        loader = PyPDFLoader(str(file_path))
+                        docs.extend(loader.load())
+                    except Exception:
+                        pass
+
+                # Version limpia Markdown de paginas HTML
+                for file_path in fuentes_dir.glob("html/*.md"):
+                    try:
+                        loader = TextLoader(str(file_path), encoding="utf-8")
+                        docs.extend(loader.load())
+                    except Exception:
+                        pass
+
+                # Tablas CSV de estadisticas
+                for file_path in fuentes_dir.glob("csv/*.csv"):
+                    try:
+                        loader = CSVLoader(str(file_path), encoding="utf-8")
+                        docs.extend(loader.load())
+                    except Exception:
+                        pass
+
     if docs:
-        print(f"[RAG] Cargados {len(docs)} fragmentos/páginas desde '{col}'.")
+        print(f"[RAG] Cargados {len(docs)} fragmentos/páginas desde '{col}' (incluyendo repositorio regional).")
     return docs
 
 

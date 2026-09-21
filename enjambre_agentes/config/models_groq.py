@@ -5,8 +5,8 @@ para la API Key configurada y proveer la lista de modelos utilizables.
 """
 import os
 import sys
-import urllib.request
 import json
+import urllib.request
 
 # Asegurar que la raíz del proyecto esté en sys.path para ejecución directa
 _root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -19,10 +19,11 @@ except ImportError:
     from keys import GROQ_API_KEY
 
 FALLBACK_MODELS_GROQ = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it",
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "groq/compound",
+    "groq/compound-mini",
 ]
 
 
@@ -30,21 +31,43 @@ def obtener_modelos_groq() -> list[str]:
     """Consulta la API de Groq y retorna los IDs de los modelos disponibles.
     
     Returns:
-        Lista de identificadores de modelos Groq (ej. ['llama-3.3-70b-versatile', ...]).
+        Lista de identificadores de modelos Groq (ej. ['qwen/qwen3.8-27b', ...]).
     """
     if not GROQ_API_KEY:
         return FALLBACK_MODELS_GROQ
 
+    # Intento 1: SDK oficial de Groq si está instalado
+    try:
+        from groq import Groq
+        client = Groq(api_key=GROQ_API_KEY)
+        lista = client.models.list()
+        modelos = [m.id for m in lista.data if hasattr(m, "id")]
+        # Filtrar modelos que no sean de audio/guard
+        modelos_chat = [m for m in modelos if "whisper" not in m and "guard" not in m]
+        if modelos_chat:
+            modelos_chat.sort()
+            return modelos_chat
+    except Exception:
+        pass
+
+    # Intento 2: Solicitud HTTP directa con User-Agent para evitar bloqueo 403 de Cloudflare
     url = "https://api.groq.com/openai/v1/models"
-    req = urllib.request.Request(url)
-    req.add_header("Authorization", f"Bearer {GROQ_API_KEY}")
-    req.add_header("Accept", "application/json")
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Accept": "application/json",
+            "User-Agent": "AgriPoli/1.0 (Linux; x86_64)",
+        }
+    )
 
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             data = json.loads(response.read().decode('utf-8'))
-            modelos = [model["id"] for model in data.get("data", []) if "id" in model]
-            # Ordenamos alfabéticamente para mayor legibilidad
+            modelos = [
+                model["id"] for model in data.get("data", [])
+                if "id" in model and "whisper" not in model["id"] and "guard" not in model["id"]
+            ]
             modelos.sort()
             return modelos if modelos else FALLBACK_MODELS_GROQ
     except Exception as e:

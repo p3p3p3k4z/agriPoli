@@ -34,13 +34,27 @@ from config.models import (
 from config.agri_logger import (
     log_agente, log_mini_agente, log_herramienta, log_flujo, log_ok, log_info, log_error
 )
-from agents.supervisor import crear_supervisor
-from agents.graph_v2 import run_enjambre_stream
+from agents.supervisor_v2 import crear_supervisor_v2
+from agents.supervisor import crear_supervisor  # V1 preservado
+from agents.graph_v3 import run_enjambre_v3_stream
+from agents.graph_v2 import run_enjambre_stream  # V2 legacy
 from tools.rag_engine import (
     COLLECTIONS, obtener_estado_rag, build_vectorstore, normalizar_coleccion
 )
 from tools.catalogo_biodiversidad import consultar_catalogo_biodiversidad_local
-from scripts.generar_diagrama import generar_diagrama_arquitectura
+from config.models import (
+    get_available_providers, get_llm, extraer_texto_mensaje,
+    obtener_modelos_disponibles, cargar_config_agentes, actualizar_config_agente,
+    GEMINI_FLASH, GROQ_LLAMA3, COHERE_CMD, OLLAMA_DEFAULT
+)
+try:
+    from scripts.generar_diagrama_v3 import generar_diagramas_v3 as generar_diagrama_arquitectura_v3
+except Exception:
+    generar_diagrama_arquitectura_v3 = None
+try:
+    from scripts.generar_diagrama import generar_diagrama_arquitectura
+except Exception:
+    generar_diagrama_arquitectura = None
 
 # Estilos ANSI limpios para texto plano en terminal
 CYAN = "\033[96m"
@@ -54,17 +68,25 @@ RESET = "\033[0m"
 
 # Etiquetas amigables con kaomojis para los nodos del grafo
 NODO_LABELS = {
-    "rag_local":      "(O_O) RAG Local",
-    "despachador":    "[>_<] Despachador Web",
-    "mini_tavily":    "(O_O) Mini-Tavily/CONABIO",
-    "mini_academico": "(^_~) Mini-Academico",
-    "mini_scraper":   "[~_~] Mini-Scraper Profundo",
-    "parseador_web":  "(^o^) Parseador Web",
-    "fusionador":     "(^-^)/ Fusionador de Contexto",
-    "agro":           "(^-^) Agente Agricola",
-    "ecologico":      "(*_*) Agente Ecologico",
-    "validador":      "[x_x] Supervisor Validador",
-    "estructurador":  "(^o^) Estructurador 3D (Three.js)",
+    # Grafo V3 (grupos)
+    "grupo_extractor":       "[>_<] Grupo Extractor",
+    "grupo_agronomo":        "(^-^) Grupo Agronomo",
+    "grupo_ecologico":       "(*_*) Grupo Ecologico",
+    "supervisor_validador":  "[x_x] Supervisor Validador",
+    "agente_sintetizador":   "(^-^) Agente Sintetizador / Resumen Ejecutivo",
+    "grupo_3d":              "(^o^) Grupo Generador 3D",
+    # Nodos internos V2 (legacy)
+    "rag_local":             "(O_O) RAG Local",
+    "despachador":           "[>_<] Despachador Web",
+    "mini_tavily":           "(O_O) Mini-Tavily/CONABIO",
+    "mini_academico":        "(^_~) Mini-Academico",
+    "mini_scraper":          "[~_~] Mini-Scraper",
+    "parseador_web":         "(^o^) Parseador Web",
+    "fusionador":            "(^-^)/ Fusionador",
+    "agro":                  "(^-^) Agente Agricola",
+    "ecologico":             "(*_*) Agente Ecologico",
+    "validador":             "[x_x] Validador",
+    "estructurador":         "(^o^) Estructurador 3D",
 }
 
 
@@ -82,45 +104,47 @@ def mostrar_banner(state: dict):
 
 
 def mostrar_ayuda():
-    """Muestra la guía completa de comandos y estructura RAG."""
+    """Muestra la guia completa de comandos y estructura RAG."""
     print(f"""
 {CYAN}{BOLD}========================================================================{RESET}
-{CYAN}{BOLD}                MANUAL DE COMANDOS — AGRIPOLI CLI                       {RESET}
+{CYAN}{BOLD}           MANUAL DE COMANDOS — AGRIPOLI CLI V3                         {RESET}
 {CYAN}{BOLD}========================================================================{RESET}
 
 {BOLD}COMANDOS DISPONIBLES:{RESET}
-  {GREEN}/help{RESET} o {GREEN}/ayuda{RESET}        Muestra este manual de ayuda.
-  {GREEN}/config{RESET}              Muestra la configuracion activa y estado de API keys.
-  {GREEN}/provider <nombre>{RESET}   Cambia el proveedor en caliente (Gemini, Groq, Cohere, Ollama, HuggingFace).
-  {GREEN}/model [nombre]{RESET}      Lista modelos en vivo descubiertos por models_* o cambia el modelo activo.
-  {GREEN}/diagrama{RESET}            Genera y guarda el diagrama de arquitectura en imagen (docs/arquitectura_agentes.png).
-  {GREEN}/biodiversidad <esp>{RESET} Consulta el catalogo de 3,900+ flora melifera y polinizadores de Mexico.
-  {GREEN}/mode <modo>{RESET}         Cambia el modo de investigacion: {YELLOW}Hibrido{RESET} | {YELLOW}Solo Local{RESET} | {YELLOW}Solo Web{RESET}.
-  {GREEN}/rag [status]{RESET}        Muestra las carpetas de conocimiento y cantidad de documentos.
-  {GREEN}/rag rebuild{RESET}         Reconstruye los indices vectoriales locales (FAISS).
-  {GREEN}/run [region]{RESET}        Lanza el flujo completo del Enjambre multiagente con streaming.
-  {GREEN}/clear{RESET} o {GREEN}/reset{RESET}       Limpia el historial de conversacion e inicia nueva sesion.
-  {GREEN}/exit{RESET} o {GREEN}/quit{RESET} o {GREEN}/q{RESET}     Cierra la sesion del supervisor.
+  {GREEN}/help{RESET} o {GREEN}/ayuda{RESET}             Muestra este manual de ayuda.
+  {GREEN}/config{RESET}                   Configuracion activa y estado de API keys.
+  {GREEN}/provider <nombre>{RESET}        Cambia el proveedor global (Gemini, Groq, Cohere, Ollama, HF).
+  {GREEN}/model [nombre]{RESET}           Lista modelos en vivo o cambia el modelo global activo.
+  {GREEN}/agente <nombre> <modelo>{RESET} Cambia el modelo de un agente especifico en config/agentes.yaml.
+                             Ej: /agente fusionador_agronomo llama3-70b-8192
+  {GREEN}/agente-provider <nombre> <prov>{RESET} Cambia el proveedor de un agente especifico.
+                             Ej: /agente-provider mini_scraper Groq
+  {GREEN}/config-agentes{RESET}           Muestra la tabla completa de modelos por agente (agentes.yaml).
+  {GREEN}/diagrama{RESET}                 Genera 5 PNGs de arquitectura en docs/ (V3 + 4 grupos).
+  {GREEN}/biodiversidad <esp>{RESET}      Catalogo local de 3,900+ flora y polinizadores de Mexico.
+  {GREEN}/mode <modo>{RESET}              Modo de investigacion: {YELLOW}Hibrido{RESET} | {YELLOW}Solo Local{RESET} | {YELLOW}Solo Web{RESET}.
+  {GREEN}/rag [status]{RESET}             Estado de la base de conocimientos RAG.
+  {GREEN}/rag rebuild{RESET}              Reconstruye indices vectoriales FAISS.
+  {GREEN}/run [region]{RESET}             Ejecuta el Enjambre Jerarquico V3 completo.
+  {GREEN}/run3d [region]{RESET}           Ejecuta el Enjambre V3 + Generador 3D.
+  {GREEN}/clear{RESET} o {GREEN}/reset{RESET}            Limpia historial e inicia nueva sesion.
+  {GREEN}/exit{RESET} o {GREEN}/quit{RESET} o {GREEN}/q{RESET}        Cierra la sesion del supervisor.
 
 {BOLD}DONDE COLOCAR TUS DOCUMENTOS PARA RAG:{RESET}
-  Los documentos se ubican en {BOLD}enjambre_agentes/data/knowledge/{RESET} separados por tema:
-  
-  [DIRECTORIO] {YELLOW}data/knowledge/suelo/{RESET}
-     Estudios edafologicos, texturas, pH, retencion de humedad, NPK y degradacion (SADER).
-  [DIRECTORIO] {YELLOW}data/knowledge/agricultura/{RESET}
-     Manuales SADER/INIFAP/USDA, rotacion de cultivos, milpa, abonos y guias de siembra.
-  [DIRECTORIO] {YELLOW}data/knowledge/polinizadores/{RESET}
-     Catalogos CONABIO, abejas nativas/meliponas, floraciones meliferas y simbiosis.
-  [DIRECTORIO] {YELLOW}data/knowledge/general/{RESET}
-     Normativas SEMARNAT (NOM-059), guias agroecologicas y publicaciones mixtas.
+  Los documentos van en {BOLD}enjambre_agentes/data/knowledge/{RESET} separados por tema:
 
+  {YELLOW}data/knowledge/suelo/{RESET}          Estudios edafologicos, pH, texturas, NPK (SADER).
+  {YELLOW}data/knowledge/agricultura/{RESET}    Manuales SADER/INIFAP/USDA, rotacion de cultivos.
+  {YELLOW}data/knowledge/polinizadores/{RESET}  Catalogos CONABIO, abejas nativas, floraciones.
+  {YELLOW}data/knowledge/general/{RESET}        Normativas SEMARNAT, guias agroecologicas mixtas.
   {DIM}Formatos compatibles: .pdf, .txt, .md, .csv{RESET}
 
-{BOLD}COMO CONVERSAR:{RESET}
-  No es necesario introducir datos tecnicos de inmediato. Puedes chatear normalmente:
-  - {DIM}"Hola, ¿que polinizadores nativos son comunes en Oaxaca?"{RESET}
-  - {DIM}"Tengo una milpa con suelo arcilloso y plagas de gusano cogollero, ¿que plantas me recomiendas intercalar?"{RESET}
-  - {DIM}"Genera el diagnostico y modelo 3D para mi parcela en Sonora"{RESET}
+{BOLD}AGENTES CONFIGURABLES EN config/agentes.yaml:{RESET}
+  mini_tavily, mini_academico, mini_scraper, descargador, fusionador_extractor,
+  mini_suelo, mini_cultivo, mini_siap, mini_inegi_agro, mini_calculadora,
+  fusionador_agronomo, mini_flora_nativa, mini_polinizadores, mini_catalogo_local,
+  mini_gbif, mini_simbiosis, fusionador_ecologico,
+  fusionador_3d, estructurador, validador_3d, supervisor
 {CYAN}{BOLD}========================================================================{RESET}
 """)
 
@@ -141,60 +165,230 @@ def mostrar_estado_rag():
     print(f"  {BOLD}Total de documentos:{RESET} {total_docs}\n")
 
 
-async def ejecutar_pipeline_enjambre(region: str, state: dict):
-    """Ejecuta el pipeline completo del enjambre con streaming y trazabilidad en tiempo real."""
+async def ejecutar_pipeline_enjambre(region: str, state: dict, activar_3d: bool = False):
+    """Ejecuta el Enjambre V3 con streaming y trazabilidad en tiempo real."""
+    version = "V3 + 3D" if activar_3d else "V3"
     print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
-    print(f"{CYAN}{BOLD}[>_<] [ENJAMBRE] Ejecutando Enjambre Multiagente para: {region}{RESET}")
-    print(f"{CYAN}Proveedor: {state['provider']} | Modo: {state['mode']}{RESET}")
+    print(f"{CYAN}{BOLD}[>_<] [ENJAMBRE {version}] Ejecutando Enjambre Jerarquico para: {region}{RESET}")
+    print(f"{CYAN}Modo: {state['mode']} | Config: config/agentes.yaml{RESET}")
     print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
 
     try:
         loop = asyncio.get_running_loop()
         def _stream():
-            return list(run_enjambre_stream(
+            return list(run_enjambre_v3_stream(
                 region=region,
                 indice_degradacion_rf=0.5,
                 historial_siembra=[],
                 thread_id=state["thread_id"],
-                provider=state["provider"],
                 flow_type=state["mode"],
+                activar_3d=activar_3d,
             ))
 
         eventos = await loop.run_in_executor(None, _stream)
+
+        resumen_ejecutivo = ""
+        dossier_tecnico = {}
+        referencias_fuentes = []
+        json_threejs = {}
 
         for event in eventos:
             for nodo_name, nodo_data in event.items():
                 label = NODO_LABELS.get(nodo_name, f"[{nodo_name}]")
                 log_ok(f"Nodo {label} completado", kaomoji="(^_^)/")
 
-                if nodo_name == "parseador_web" and "contexto_web" in nodo_data:
-                    preview = str(nodo_data["contexto_web"])[:200]
-                    print(f"    {DIM}Resumen web: {preview}...{RESET}")
-                elif nodo_name == "agro" and "propuestas_agricolas" in nodo_data:
-                    if nodo_data["propuestas_agricolas"]:
-                        p = nodo_data["propuestas_agricolas"][0].get("texto", "")[:200]
-                        print(f"    {DIM}Propuesta agricola: {p}...{RESET}")
-                elif nodo_name == "ecologico" and "propuestas_ecologicas" in nodo_data:
-                    if nodo_data["propuestas_ecologicas"]:
-                        p = nodo_data["propuestas_ecologicas"][0].get("texto", "")[:200]
-                        print(f"    {DIM}Propuesta ecologica: {p}...{RESET}")
-                elif nodo_name == "estructurador" and "json_threejs_final" in nodo_data:
-                    import json as _json
+                if nodo_name == "grupo_extractor":
+                    ctx = nodo_data.get("contexto_extractor", "")
+                    refs = nodo_data.get("referencias_fuentes", [])
+                    print(f"    {DIM}Contexto web extraido: {len(ctx)} caracteres | {len(refs)} fuentes iniciales{RESET}")
+                elif nodo_name == "grupo_agronomo":
+                    props = nodo_data.get("propuestas_agricolas", [])
+                    print(f"    {DIM}Propuestas agronomicas aprobadas: {len(props)} propuesta(s){RESET}")
+                elif nodo_name == "grupo_ecologico":
+                    props = nodo_data.get("propuestas_ecologicas", [])
+                    print(f"    {DIM}Propuestas ecologicas aprobadas: {len(props)} propuesta(s){RESET}")
+                elif nodo_name == "supervisor_validador":
+                    decision = nodo_data.get("estado_final", "COMPLETADO")
+                    print(f"    {DIM}Auditoria Supervisor: {decision}{RESET}")
+                elif nodo_name == "agente_sintetizador":
+                    resumen_ejecutivo = nodo_data.get("resumen_ejecutivo", "")
+                    dossier_tecnico = nodo_data.get("dossier_tecnico", {})
+                    referencias_fuentes = nodo_data.get("referencias_fuentes", [])
+                elif nodo_name == "grupo_3d":
+                    json_threejs = nodo_data.get("json_threejs_final", {})
                     json_path = os.path.join(
                         os.path.dirname(__file__), "..", "data",
                         f"mapa3d_{region.replace(' ', '_').lower()}.json"
                     )
-                    os.makedirs(os.path.dirname(json_path), exist_ok=True)
-                    with open(json_path, "w", encoding="utf-8") as f:
-                        _json.dump(nodo_data["json_threejs_final"], f, ensure_ascii=False, indent=2)
                     print(f"    {GREEN}{BOLD}(^o^) [JSON 3D] Guardado en: {json_path}{RESET}")
 
-        print(f"\n{GREEN}{BOLD}{'='*72}{RESET}")
-        log_ok(f"Diagnostico y modelo 3D completados con exito para '{region}'.", kaomoji="(^o^)")
-        print(f"{GREEN}{BOLD}{'='*72}{RESET}\n")
+        # Mostrar Resumen Ejecutivo y Diagnostico Integral en pantalla
+        if resumen_ejecutivo:
+            print(f"\n{GREEN}{BOLD}{'='*72}{RESET}")
+            print(f"{GREEN}{BOLD}(^-^) [RESUMEN EJECUTIVO Y DIAGNOSTICO INTEGRAL: {region.upper()}]{RESET}")
+            print(f"{GREEN}{BOLD}{'='*72}{RESET}\n")
+            print(resumen_ejecutivo)
+            print(f"\n{GREEN}{BOLD}{'='*72}{RESET}")
+            log_ok(f"Diagnostico completado con exito para '{region}'.", kaomoji="(^o^)")
+            print(f"{GREEN}{BOLD}{'='*72}{RESET}\n")
+        else:
+            print(f"\n{GREEN}{BOLD}{'='*72}{RESET}")
+            log_ok(f"Diagnostico completado para '{region}'.", kaomoji="(^o^)")
+            print(f"{GREEN}{BOLD}{'='*72}{RESET}\n")
+
+        # Consultar interactivamente al usuario si desea conservar el dossier y fuentes localmente
+        print(f"{YELLOW}{BOLD}(o.O)? [CONSERVACION LOCAL DE FUENTES Y DOSSIER]{RESET}")
+        print(f"  {CYAN}Se identificaron {len(referencias_fuentes)} fuentes, normas y referencias oficiales para '{region}'.{RESET}")
+        try:
+            resp = input(f"  ¿Deseas guardar localmente este dossier y descargar sus fuentes para '{region}'? [S/n]: ").strip().lower()
+            guardar_confirmado = resp in ("", "s", "si", "y", "yes", "1")
+        except (KeyboardInterrupt, EOFError):
+            guardar_confirmado = False
+
+        if guardar_confirmado:
+            await guardar_dossier_y_fuentes_localmente(region, resumen_ejecutivo, dossier_tecnico, referencias_fuentes)
+        else:
+            log_info("Conservacion local omitida por el usuario.", kaomoji="(o_o)")
 
     except Exception as e:
         log_error(f"Error en el flujo del Enjambre: {e}", kaomoji="[X_X]")
+
+
+async def guardar_dossier_y_fuentes_localmente(
+    region: str,
+    resumen_ejecutivo: str,
+    dossier_tecnico: dict,
+    referencias_fuentes: list[str],
+):
+    """Guarda localmente el informe en Markdown, actualiza referencias.json,
+    descarga fuentes en data/knowledge/descargas/ (logica base preservada)
+    y ADICIONALMENTE organiza el repositorio jerarquico en regiones/<estado>/<municipio>/
+    con referencias.json, datos_relevantes.json y fuentes clasificadas.
+    """
+    import re
+    import datetime
+    import json
+
+    region_slug = re.sub(r'[^a-zA-Z0-9]+', '_', region.strip().lower()).strip('_')
+    base_data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+    ahora_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # =========================================================================
+    # 1. LOGICA ORIGINAL CONSERVADA: Guardar Dossier en data/reportes/
+    # =========================================================================
+    reportes_dir = os.path.join(base_data_dir, "reportes")
+    os.makedirs(reportes_dir, exist_ok=True)
+    reporte_path = os.path.join(reportes_dir, f"diagnostico_{region_slug}.md")
+
+    contenido_md = (
+        f"---\n"
+        f"region: \"{region}\"\n"
+        f"fecha: \"{ahora_str}\"\n"
+        f"generador: \"AgriPoli Enjambre V3\"\n"
+        f"total_fuentes: {len(referencias_fuentes)}\n"
+        f"---\n\n"
+        f"{resumen_ejecutivo}\n"
+    )
+    try:
+        with open(reporte_path, "w", encoding="utf-8") as f:
+            f.write(contenido_md)
+        log_ok(f"Dossier Markdown guardado en: {reporte_path}", kaomoji="(^_^)/")
+    except Exception as e:
+        log_error(f"Error al escribir dossier Markdown: {e}", kaomoji="[X_X]")
+
+    # =========================================================================
+    # 2. LOGICA ORIGINAL CONSERVADA: Guardar o actualizar data/referencias.json
+    # =========================================================================
+    referencias_path = os.path.join(base_data_dir, "referencias.json")
+    registro = {
+        "region": region,
+        "slug": region_slug,
+        "fecha": ahora_str,
+        "total_fuentes": len(referencias_fuentes),
+        "fuentes": referencias_fuentes,
+    }
+    try:
+        historial_ref = []
+        if os.path.exists(referencias_path):
+            with open(referencias_path, "r", encoding="utf-8") as f:
+                try:
+                    contenido_json = json.load(f)
+                    if isinstance(contenido_json, list):
+                        historial_ref = contenido_json
+                    elif isinstance(contenido_json, dict):
+                        historial_ref = contenido_json.get("registros", [contenido_json])
+                except Exception:
+                    historial_ref = []
+
+        historial_ref = [r for r in historial_ref if r.get("slug") != region_slug]
+        historial_ref.append(registro)
+
+        with open(referencias_path, "w", encoding="utf-8") as f:
+            json.dump(historial_ref, f, ensure_ascii=False, indent=2)
+        log_ok(f"Registro de fuentes actualizado en: {referencias_path}", kaomoji="(^_^)/")
+    except Exception as e:
+        log_error(f"Error actualizando referencias.json: {e}", kaomoji="[X_X]")
+
+    # =========================================================================
+    # 3. LOGICA ORIGINAL CONSERVADA: Descarga en data/knowledge/descargas/<region>/
+    # =========================================================================
+    if referencias_fuentes:
+        descargas_dir = os.path.join(base_data_dir, "knowledge", "descargas", region_slug)
+        os.makedirs(descargas_dir, exist_ok=True)
+        log_info(f"Iniciando descarga local de fuentes en: {descargas_dir}...", kaomoji="[~_~]")
+
+        try:
+            from tools.descargador_masivo import DescargadorMasivoAsync
+            import aiohttp
+
+            descargador = DescargadorMasivoAsync(max_concurrencia=3, delay_segundos=0.3)
+            urls_candidatas = [u for u in referencias_fuentes if not u.endswith((".png", ".jpg", ".svg", ".ico"))]
+
+            async with aiohttp.ClientSession() as session:
+                descargas_ok = 0
+                for idx, url in enumerate(urls_candidatas[:8]):
+                    nombre_base = f"fuente_{idx + 1}"
+                    if ".pdf" in url.lower():
+                        nombre_base += ".pdf"
+                    else:
+                        nombre_base += ".html"
+                    dest_file = os.path.join(descargas_dir, nombre_base)
+                    exito = await descargador.download_file(session, url, dest_file, desc=f"Fuente [{idx + 1}]")
+                    if exito:
+                        descargas_ok += 1
+
+            log_ok(f"Descarga masiva completada: {descargas_ok} archivo(s) guardado(s) para consulta offline.", kaomoji="(^o^)")
+        except Exception as e:
+            log_error(f"Aviso durante la descarga masiva de fuentes: {e}", kaomoji="[o_o]")
+
+    # =========================================================================
+    # 4. ADICIONAL: ALMACENAMIENTO JERARQUICO REGIONAL (regiones/<estado>/<municipio>/)
+    # =========================================================================
+    from tools.gestor_regiones import guardar_dossier_regional, parsear_region_jerarquica
+
+    estado, mun, ruta_rel = parsear_region_jerarquica(region)
+    print(f"\n{CYAN}{BOLD}[O_O] [ALMACENAMIENTO REGIONAL ADICIONAL]{RESET} Sincronizando repositorio: {BOLD}{ruta_rel}/{RESET}")
+
+    try:
+        res = await guardar_dossier_regional(
+            region=region,
+            resumen_ejecutivo=resumen_ejecutivo,
+            dossier_tecnico=dossier_tecnico,
+            referencias_fuentes=referencias_fuentes,
+        )
+
+        print(f"\n{GREEN}{BOLD}(^-^)/ [REPOSITORIO REGIONAL ADICIONAL ACTUALIZADO]{RESET}")
+        print(f"  {BOLD}Directorio base:{RESET}     {ruta_rel}/")
+        print(f"  * {BOLD}Dossier regional:{RESET} {res['diagnostico_path']}")
+        print(f"  * {BOLD}Indice fuentes:{RESET}    {res['referencias_path']}")
+        print(f"  * {BOLD}Datos relevantes:{RESET}  {res['datos_relevantes_path']}")
+        d = res.get("descargas", {})
+        total_arch = d.get("pdf", 0) + d.get("html", 0) + d.get("csv", 0) + d.get("json", 0)
+        print(f"  * {BOLD}Fuentes en disco:{RESET}  Total: {total_arch} (PDF: {d.get('pdf', 0)} | HTML/MD: {d.get('html', 0)} | CSV/JSON: {d.get('csv', 0) + d.get('json', 0)})")
+        print(f"  {DIM}Archivos disponibles tanto en data/ como en la estructura regional {ruta_rel}/.{RESET}\n")
+
+    except Exception as e:
+        log_error(f"Aviso en sincronizacion regional adicional: {e}", kaomoji="[o_o]")
 
 
 async def procesar_comando(linea: str, state: dict) -> bool:
@@ -265,13 +459,68 @@ async def procesar_comando(linea: str, state: dict) -> bool:
             state["model"] = arg
             log_ok(f"Modelo actualizado a: {arg}", kaomoji="(^_^)/")
 
-    elif cmd in ("/diagrama", "/diagram", "/arquitectura"):
-        log_info("Compilando arquitectura en LangGraph y exportando imagen estatica...", kaomoji="(o_o)")
-        ruta = generar_diagrama_arquitectura()
-        if ruta:
-            log_ok(f"Imagen estatica guardada exitosamente en: {ruta}", kaomoji="(^o^)")
+    elif cmd in ("/diagrama", "/diagram", "/arquitectura", "/diagramas"):
+        log_info("Exportando diagramas de arquitectura en alta resolucion (Enjambre + Subgrafos)...", kaomoji="(o_o)")
+        if generar_diagrama_arquitectura_v3:
+            rutas = generar_diagrama_arquitectura_v3()
+            if rutas:
+                for r in rutas:
+                    log_ok(f"Diagrama guardado: {r}", kaomoji="(^o^)")
+            else:
+                log_error("No fue posible generar los diagramas V3.", kaomoji="[X_X]")
+        elif generar_diagrama_arquitectura:
+            ruta = generar_diagrama_arquitectura()
+            if ruta:
+                log_ok(f"Diagrama V2 guardado en: {ruta}", kaomoji="(^o^)")
+            else:
+                log_error("No fue posible generar el diagrama.", kaomoji="[X_X]")
         else:
-            log_error("No fue posible generar la imagen del diagrama.", kaomoji="[X_X]")
+            log_error("Generador de diagramas no disponible.", kaomoji="[X_X]")
+
+    elif cmd in ("/agente", "/agente-model"):
+        # /agente <nombre_agente> <modelo>
+        partes_cmd = arg.split(maxsplit=1)
+        if len(partes_cmd) < 2:
+            print(f"\nUso: /agente <nombre_agente> <modelo>")
+            print(f"Ejemplo: /agente fusionador_agronomo llama3-70b-8192\n")
+        else:
+            nombre, nuevo_modelo = partes_cmd[0], partes_cmd[1]
+            ok = actualizar_config_agente(nombre, modelo=nuevo_modelo)
+            if ok:
+                log_ok(f"Modelo del agente '{nombre}' actualizado a: {nuevo_modelo}", kaomoji="(^_^)/")
+                log_info("Diagramas de arquitectura actualizados en segundo plano en docs/.", kaomoji="[._.]")
+            else:
+                log_error(f"No se pudo actualizar el agente '{nombre}'.", kaomoji="[X_X]")
+
+    elif cmd == "/agente-provider":
+        partes_cmd = arg.split(maxsplit=1)
+        if len(partes_cmd) < 2:
+            print(f"\nUso: /agente-provider <nombre_agente> <proveedor>")
+            print(f"Ejemplo: /agente-provider mini_scraper Groq\n")
+        else:
+            nombre, nuevo_prov = partes_cmd[0], partes_cmd[1]
+            ok = actualizar_config_agente(nombre, proveedor=nuevo_prov)
+            if ok:
+                log_ok(f"Proveedor del agente '{nombre}' actualizado a: {nuevo_prov}", kaomoji="(^_^)/")
+                log_info("Diagramas de arquitectura actualizados en segundo plano en docs/.", kaomoji="[._.]")
+            else:
+                log_error(f"No se pudo actualizar el proveedor del agente '{nombre}'.", kaomoji="[X_X]")
+
+    elif cmd == "/config-agentes":
+        cfg = cargar_config_agentes()
+        modelos = cfg.get("modelos", {})
+        config_general = cfg.get("configuracion", {})
+        print(f"\n{MAGENTA}{BOLD}[CONFIG: AGENTES] config/agentes.yaml{RESET}")
+        print(f"\n{BOLD}Configuracion general:{RESET}")
+        for k, v in config_general.items():
+            print(f"  * {k}: {v}")
+        print(f"\n{BOLD}Modelos por agente:{RESET}")
+        for nombre, info in modelos.items():
+            prov = info.get('proveedor', '?')
+            mod  = info.get('modelo', '?')
+            temp = info.get('temperatura', '?')
+            print(f"  {CYAN}{nombre:<28}{RESET} {GREEN}{prov:<10}{RESET} {mod} (T={temp})")
+        print(f"\n{DIM}Edita config/agentes.yaml para cambiar manualmente. Usa /agente para cambiar en caliente.{RESET}\n")
 
     elif cmd in ("/biodiversidad", "/bio", "/especies"):
         if not arg:
@@ -302,11 +551,21 @@ async def procesar_comando(linea: str, state: dict) -> bool:
         region = arg
         if not region:
             try:
-                region = input("Nombre de la region a diagnosticar: ").strip()
+                region = input("Nombre de la region a diagnosticar (Enjambre V3): ").strip()
             except (KeyboardInterrupt, EOFError):
                 return True
         if region:
-            await ejecutar_pipeline_enjambre(region, state)
+            await ejecutar_pipeline_enjambre(region, state, activar_3d=False)
+
+    elif cmd == "/run3d":
+        region = arg
+        if not region:
+            try:
+                region = input("Nombre de la region para diagnostico + modelo 3D: ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return True
+        if region:
+            await ejecutar_pipeline_enjambre(region, state, activar_3d=True)
 
     elif cmd in ("/clear", "/reset"):
         state["chat_history"] = []
@@ -331,10 +590,23 @@ async def main():
     }
 
     try:
-        state["supervisor"] = crear_supervisor(provider=state["provider"])
+        # Usar Supervisor V2 como principal (usa config/agentes.yaml)
+        state["supervisor"] = crear_supervisor_v2(provider=state["provider"])
+        log_ok("Supervisor V2 inicializado con config/agentes.yaml.", kaomoji="(^_^)/")
     except Exception as e:
-        log_error(f"Error inicializando supervisor: {e}", kaomoji="[X_X]")
-        return
+        log_error(f"Error inicializando Supervisor V2, intentando V1: {e}", kaomoji="[X_X]")
+        try:
+            state["supervisor"] = crear_supervisor(provider=state["provider"])
+            log_ok("Supervisor V1 (fallback) inicializado.", kaomoji="(^_^)/")
+        except Exception as e2:
+            log_error(f"Error critico inicializando supervisor: {e2}", kaomoji="[X_X]")
+            return
+
+    try:
+        from config.models import iniciar_vigilante_agentes
+        iniciar_vigilante_agentes(intervalo_segundos=2.0)
+    except Exception:
+        pass
 
     mostrar_banner(state)
 

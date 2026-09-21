@@ -59,6 +59,10 @@ def buscar_tavily_mexico(query: str, tema: str) -> str:
         "general": "site:conabio.gob.mx OR site:gob.mx OR site:unam.mx",
     }
     
+    from config.agri_logger import log_flujo, log_herramienta
+    log_flujo("agente", "tavily", f"Consultando Tavily Search ({tema}): {query[:50]}...", kaomoji="[>_<]")
+    log_herramienta("TAVILY_SEARCH", f"Tema: {tema} | Consulta: '{query}'", kaomoji="[>_<]")
+    
     filtro_sitios = sitios_por_tema.get(tema, sitios_por_tema["general"])
     query_enriquecida = f"México {query} {filtro_sitios}"
     
@@ -67,15 +71,20 @@ def buscar_tavily_mexico(query: str, tema: str) -> str:
         raw_res = tavily.invoke({"query": query_enriquecida})
         resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
+        urls_encontradas = []
         for r in resultados:
             url = r.get("url", "sin URL")
             contenido = r.get("content", "sin contenido")
+            urls_encontradas.append(url)
             texto += f"URL: {url}\nContenido: {contenido}\n\n---\n\n"
         
         if not texto.strip():
+            log_herramienta("TAVILY_SEARCH", f"Sin resultados para: '{query}'", kaomoji="(-_-;)")
             return f"No se encontraron resultados para '{query}' con tema '{tema}'."
+        log_herramienta("TAVILY_SEARCH", f"Exito: {len(resultados)} fuentes encontradas ({', '.join(urls_encontradas[:2])})", kaomoji="(^_^)/")
         return texto
     except Exception as e:
+        log_herramienta("TAVILY_SEARCH", f"Error de busqueda: {e}", kaomoji="[X_X]")
         return f"Error en búsqueda Tavily: {e}"
 
 
@@ -90,6 +99,10 @@ def buscar_conabio(query: str) -> str:
     Args:
         query: Consulta sobre biodiversidad (ej. 'abejas nativas Oaxaca').
     """
+    from config.agri_logger import log_flujo, log_herramienta
+    log_flujo("agente", "tavily_conabio", f"Consultando biodiversidad CONABIO: {query[:50]}...", kaomoji="[>_<]")
+    log_herramienta("TAVILY_CONABIO", f"Consulta: '{query}'", kaomoji="[>_<]")
+
     query_enriquecida = (
         f"{query} México biodiversidad "
         f"site:conabio.gob.mx OR site:enciclovida.mx OR site:inaturalist.org OR "
@@ -101,15 +114,20 @@ def buscar_conabio(query: str) -> str:
         raw_res = tavily.invoke({"query": query_enriquecida})
         resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
+        urls_encontradas = []
         for r in resultados:
             url = r.get("url", "sin URL")
             contenido = r.get("content", "sin contenido")
+            urls_encontradas.append(url)
             texto += f"[CONABIO/Biodiversidad] URL: {url}\nContenido: {contenido}\n\n---\n\n"
         
         if not texto.strip():
+            log_herramienta("TAVILY_CONABIO", f"Sin datos para: '{query}'", kaomoji="(-_-;)")
             return f"No se encontraron datos de biodiversidad para: '{query}'."
+        log_herramienta("TAVILY_CONABIO", f"Exito: {len(resultados)} registros ({', '.join(urls_encontradas[:2])})", kaomoji="(^_^)/")
         return texto
     except Exception as e:
+        log_herramienta("TAVILY_CONABIO", f"Error: {e}", kaomoji="[X_X]")
         return f"Error en búsqueda CONABIO: {e}"
 
 
@@ -124,6 +142,10 @@ def buscar_literatura_agricola(query: str) -> str:
     Args:
         query: Consulta agrícola (ej. 'cultivos milpa Mixteca rendimiento').
     """
+    from config.agri_logger import log_flujo, log_herramienta
+    log_flujo("agente", "tavily_agricola", f"Buscando literatura e instituciones agricolas: {query[:50]}...", kaomoji="[>_<]")
+    log_herramienta("TAVILY_AGRICOLA", f"Consulta: '{query}'", kaomoji="[>_<]")
+
     query_enriquecida = (
         f"{query} México agricultura "
         f"site:gob.mx/agricultura OR site:gob.mx/sader OR site:inifap.gob.mx OR "
@@ -135,15 +157,20 @@ def buscar_literatura_agricola(query: str) -> str:
         raw_res = tavily.invoke({"query": query_enriquecida})
         resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
+        urls_encontradas = []
         for r in resultados:
             url = r.get("url", "sin URL")
             contenido = r.get("content", "sin contenido")
+            urls_encontradas.append(url)
             texto += f"[Agricultura MX] URL: {url}\nContenido: {contenido}\n\n---\n\n"
         
         if not texto.strip():
+            log_herramienta("TAVILY_AGRICOLA", f"Sin datos agricolas para: '{query}'", kaomoji="(-_-;)")
             return f"No se encontraron datos agrícolas para: '{query}'."
+        log_herramienta("TAVILY_AGRICOLA", f"Exito: {len(resultados)} fuentes tecnicas ({', '.join(urls_encontradas[:2])})", kaomoji="(^_^)/")
         return texto
     except Exception as e:
+        log_herramienta("TAVILY_AGRICOLA", f"Error: {e}", kaomoji="[X_X]")
         return f"Error en búsqueda agrícola: {e}"
 
 
@@ -158,6 +185,10 @@ def buscar_estudios_suelo(query: str) -> str:
     Args:
         query: Consulta edafológica (ej. 'estudios de suelos muestreo barrena SADER').
     """
+    from config.agri_logger import log_flujo, log_herramienta
+    log_flujo("agente", "tavily_suelo", f"Buscando estudios edafologicos: {query[:50]}...", kaomoji="[>_<]")
+    log_herramienta("TAVILY_SUELO", f"Consulta: '{query}'", kaomoji="[>_<]")
+
     query_enriquecida = (
         f"{query} México suelo edafología "
         f"site:gob.mx/agricultura OR site:inifap.gob.mx OR site:inegi.org.mx OR site:gob.mx/semarnat"
@@ -168,16 +199,63 @@ def buscar_estudios_suelo(query: str) -> str:
         raw_res = tavily.invoke({"query": query_enriquecida})
         resultados = _extraer_resultados_tavily(raw_res)
         texto = ""
+        urls_encontradas = []
         for r in resultados:
             url = r.get("url", "sin URL")
             contenido = r.get("content", "sin contenido")
+            urls_encontradas.append(url)
             texto += f"[Suelo/Edafología MX] URL: {url}\nContenido: {contenido}\n\n---\n\n"
         
         if not texto.strip():
+            log_herramienta("TAVILY_SUELO", f"Sin estudios para: '{query}'", kaomoji="(-_-;)")
             return f"No se encontraron estudios de suelo para: '{query}'."
+        log_herramienta("TAVILY_SUELO", f"Exito: {len(resultados)} estudios ({', '.join(urls_encontradas[:2])})", kaomoji="(^_^)/")
         return texto
     except Exception as e:
+        log_herramienta("TAVILY_SUELO", f"Error: {e}", kaomoji="[X_X]")
         return f"Error en búsqueda de suelos: {e}"
+
+
+@tool
+def buscar_antecedentes_cultivo(consulta: str) -> str:
+    """Busca antecedentes cientificos, historicos y tecnicos de grupos de cultivos en Mexico usando Tavily.
+    
+    Consulta repositorios cientificos y tecnicos (INIFAP, Chapingo, UNAM, CIMMYT, SciELO Mexico)
+    para validar que los grupos de cultivos (ej. milpa, maiz-frijol-calabaza, frutales y leguminosas)
+    cuentan con antecedentes documentados de exito, viabilidad y beneficios.
+    
+    Args:
+        consulta: Consulta de antecedentes (ej. 'antecedentes asociacion cultivos maiz frijol calabaza mexico').
+    """
+    from config.agri_logger import log_flujo, log_herramienta
+    log_flujo("agente", "tavily_antecedentes", f"Investigando antecedentes cientificos en Tavily: {consulta[:50]}...", kaomoji="[>_<]")
+    log_herramienta("TAVILY_ANTECEDENTES", f"Consulta: '{consulta}'", kaomoji="[>_<]")
+
+    query_enriquecida = (
+        f"{consulta} México antecedentes agronómicos investigación "
+        f"site:scielo.org.mx OR site:inifap.gob.mx OR site:cimmyt.org OR site:chapingo.mx OR site:revistas.unam.mx OR site:gob.mx/agricultura"
+    )
+
+    tavily = _get_tavily(max_results=5)
+    try:
+        raw_res = tavily.invoke({"query": query_enriquecida})
+        resultados = _extraer_resultados_tavily(raw_res)
+        texto = ""
+        urls_encontradas = []
+        for r in resultados:
+            url = r.get("url", "sin URL")
+            contenido = r.get("content", "sin contenido")
+            urls_encontradas.append(url)
+            texto += f"[Antecedente Cientifico MX] URL: {url}\nContenido: {contenido}\n\n---\n\n"
+
+        if not texto.strip():
+            log_herramienta("TAVILY_ANTECEDENTES", f"Sin antecedentes para: '{consulta}'", kaomoji="(-_-;)")
+            return f"No se encontraron antecedentes documentados para: '{consulta}'."
+        log_herramienta("TAVILY_ANTECEDENTES", f"Exito: {len(resultados)} articulos/manuales ({', '.join(urls_encontradas[:2])})", kaomoji="(^_^)/")
+        return texto
+    except Exception as e:
+        log_herramienta("TAVILY_ANTECEDENTES", f"Error: {e}", kaomoji="[X_X]")
+        return f"Error en búsqueda de antecedentes: {e}"
 
 
 @tool

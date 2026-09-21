@@ -1,0 +1,125 @@
+modelos:
+  mini_tavily:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  mini_academico:
+    proveedor: Cohere
+    modelo: command-r7b-12-2024
+    temperatura: 0.1
+  mini_scraper:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  mini_referencias_extractor:
+    proveedor: Cohere
+    modelo: command-r7b-12-2024
+    temperatura: 0.1
+  descargador:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  fusionador_extractor:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.0
+  mini_suelo:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.2
+  mini_cultivo:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.2
+  mini_siap:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  mini_inegi_agro:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  mini_calculadora:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  mini_rotacion_regenerativa:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.2
+  mini_referencias:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  mini_referencias_agronomo:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  fusionador_agronomo:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.0
+  mini_flora_nativa:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.2
+  mini_polinizadores:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.2
+  mini_catalogo_local:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  mini_gbif:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  mini_control_biologico:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.2
+  mini_atractores_polinizadores:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.2
+  mini_referencias_ecologico:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  fusionador_ecologico:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.0
+  fusionador_3d:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  estructurador:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  mini_referencias_3d:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.1
+  validador_3d:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.0
+  supervisor:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.1
+  agente_sintetizador:
+    proveedor: Gemini
+    modelo: gemini-3.5-flash-lite
+    temperatura: 0.1
+configuracion:
+  max_ciclos_retroalimentacion: 3
+  confirmacion_descarga: manual
+  flow_type: Hibrido
+  activar_3d_automatico: false
+  max_iteraciones_supervisor: 3
+  guardar_dossier_local: true
+

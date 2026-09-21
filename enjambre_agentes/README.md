@@ -1,168 +1,168 @@
 # (^-^) [AGRIPOLI] Sistema de Apoyo Multiagente para el Manejo Agricola y Preservacion de Polinizadores
 
-> Sistema multi-agente orquestado con **LangGraph** que automatiza la búsqueda, recolección, extracción y síntesis de datos ecológicos, geográficos y agrícolas de México para el **Sistema Interactivo Inteligente para el Manejo Agrícola y Preservación de Polinizadores (AgriPoli)**.
+> Sistema multiagente jerarquico orquestado con **LangGraph** que automatiza la investigacion edafologica, el balance agronomico, el diseno de islas polinizadoras y la generacion de mapas tridimensionales interactivos para el **Sistema Interactivo Inteligente para el Manejo Agricola y Preservacion de Polinizadores (AgriPoli)**.
 
 ---
 
-## [O_O] [ARQUITECTURA] Arquitectura del Enjambre
+## [O_O] [ARQUITECTURA] Arquitectura Jerarquica del Enjambre V3
 
-El sistema ha evolucionado de un simple flujo secuencial a un **Enjambre Jerárquico** controlado por un Agente Supervisor:
+El sistema se organiza en un **Grafo Maestro Jerarquico** orquestado por un **Supervisor Maestro V2** que delega a cuatro grupos independientes, un nodo de sintesis ejecutiva con persistencia local y validaciones ciclicas:
+
+![Arquitectura del Enjambre Jerarquico V3](file:///home/m4r10/Documents/AgriPoli/enjambre_agentes/docs/arquitectura_v3.png)
 
 ```
-(^-^) Usuario <---> [O_O] [Supervisor] <───> [._.] [Gestor Descargas Masivas]
-                          │
-         ┌────────────────┴────────────────┐
-         ▼                                 ▼
-[>_<] [Grupo 1: Investigador]    (ง •̀_•́)ง [Grupo 2: Agro-Experto]
-(Scraping Web, PDFs, RAG)        (Catálogos INEGI, BD Locales)
+(^-^) Usuario <---> [O_O] [Supervisor Maestro V2]
+                              │
+     ┌────────────────────────┴────────────────────────┐
+     ▼                                                 ▼
+[Grafo Maestro V3]                            [Herramientas Directas]
+     │                                         * Catalogo Biodiversidad (3,922+)
+     ▼                                         * RAG Local (4 colecciones)
+[>_<] [Grupo 1: Extractor]                    * Delegaciones tematicas directas
+(Tavily, Papers Cohere/ArXiv, Scraper Groq, Descargador)
+     │
+     ▼
+(^-^) [Grupo 2: Agronomo] <───┐ (Loop retroalimentacion interno: max 3 ciclos)
+(Suelo, Cultivos, SIAP, INEGI, SymPy)
+     │                        │
+     ▼                        │
+(*_*) [Grupo 3: Ecologico] <──┘ (Loop retroalimentacion interno: max 3 ciclos)
+(Flora nativa, Polinizadores, Catalogo SNIB, GBIF, Simbiosis)
+     │
+     ▼
+[x_x] [Supervisor Validador] (Auditoria global inter-grupo)
+     │
+     ▼
+[O_O] [Agente Sintetizador] ───> [Persistencia Local Human-in-the-Loop]
+(Dossier 8 Secciones Tecnicas)   * data/reportes/diagnostico_<region>.md
+     │                           * data/referencias.json
+     │                           * data/knowledge/descargas/<region>/
+     ▼ (Opcional bajo confirmacion)
+(^o^) [Grupo 4: Generador 3D] (Three.js Pydantic Mapa3D, max 2 reintentos)
+     │
+     ▼
+ (^_^) Fin / Resumen Ejecutivo en Consola + JSON Three.js
 ```
 
-### Nodos del Enjambre
-
-| Nodo/Agente | Función | Herramientas Clave |
-|-------------|---------|--------------------|
-| **Supervisor** | Interactúa contigo, enruta peticiones y pide permiso para descargar. | `delegar_investigador`, `consultar_agroexperto`, `descargas_masivas` |
-| **Investigador** | Busca URLs y extrae contexto (Scraping/RAG) para armar JSONs. | `buscar_tavily_mexico`, `lector_web_playwright` |
-| **Agro Experto** | Cruza datos de bases locales y la API oficial del BISE. | `consultar_base_agricola_local`, `consultar_indicador_inegi` |
-
-### Fuentes Oficiales
-* [MEX] **CONABIO** / EncicloVida — Biodiversidad y Polinizadores
-* [SADER] **SADER** / SIAP — Agricultura y Cierres Agrícolas
-* [INEGI] **INEGI** — Geografía, Edafología y Socioeconomía
-* [UNAM] **UNAM** / IBUNAM — Colecciones Botánicas e Insectos
+> **Documentacion y Diagramas Detallados:** Consulta el inventario completo de agentes y flujos en [`docs/ESTADO_PROYECTO.md`](file:///home/m4r10/Documents/AgriPoli/enjambre_agentes/docs/ESTADO_PROYECTO.md) y el artefacto interactivo [`diagrama_enjambre.md`](file:///home/m4r10/.gemini/antigravity-ide/brain/faff0268-1b38-41cd-8f49-ac8c065bfc97/diagrama_enjambre.md).
 
 ---
 
-## (^_^)/ [QUICKSTART] Quickstart (Entorno `uv`)
+## (^_^)/ [QUICKSTART] Inicio Rapido (Entorno `uv`)
 
-El proyecto utiliza el moderno gestor **uv** y su `pyproject.toml` para ser ultra rápido.
-
-### 1. Inicialización
+### 1. Instalacion de dependencias
 ```bash
-# Entrar a la carpeta
 cd enjambre_agentes
-
-# Las dependencias se instalarán automáticamente en el entorno virtual
+uv sync
 uv run playwright install chromium
 ```
 
-### 2. Configurar API keys
+### 2. Variables de Entorno (.env)
 ```bash
 cp .env.example .env
-# Editar .env con tus API keys (Gemini, Tavily, INEGI, etc.)
+# Configura tus API keys (GEMINI_API_KEY, GROQ_API_KEY, COHERE_API_KEY, TAVILY_API_KEY, INEGI_API_TOKEN, etc.)
 ```
 
-### 3. Ejecutar el Chat Interactivo (Human-in-the-Loop)
-El punto de entrada principal ahora es el Agente Supervisor interactivo:
+### 3. Ejecutar el Chat Interactivo V3
 ```bash
-uv run python scripts/main_supervisor.py
-```
-*Escríbele en el chat: "Dime qué polinizadores hay en Oaxaca" o "Cuáles son los rendimientos de la milpa en Sonora".*
-
----
-
-## [._.] [DESCARGAS: MASIVAS] Extracción de Datos Libres y Descargas Masivas
-
-Además de la búsqueda dinámica, el Enjambre cuenta con un potente motor unificado de descargas asíncronas (`DescargadorMasivoAsync`). Este motor te permite bajar las bases de datos gubernamentales completas a tu computadora.
-
-Puedes invocar estas descargas de dos maneras:
-1. **Pidiéndoselo al Supervisor** en el chat interactivo (él te preguntará si deseas guardarlas).
-2. **Directamente desde la terminal** ejecutando los scripts dedicados:
-
-```bash
-# 1. Catálogo Completo de Polinizadores y Flora (EncicloVida / iNaturalist)
-uv run python scripts/descargar_catalogo.py --tipo ambos --use-gbif
-
-# 2. Cierres Agrícolas (SADER / SIAP)
-uv run python scripts/descarga_agricola.py
-
-# 3. Colecciones Universitarias (IBUNAM)
-uv run python scripts/descarga_unam.py
-```
-
-> **Gestión de Referencias:** Todas las extracciones masivas registran automáticamente su URL de origen, título y fecha en `data/referencias.json`, garantizando así el rigor científico y trazabilidad de los datos.
-
-## [O_O] [ESTRUCTURA] Estructura del Proyecto
-
-```
-AgriPoli/enjambre_agentes/
-├── config/
-│   ├── keys.py         # Gestión de API keys
-│   └── models.py       # Fábrica LLM multi-proveedor
-├── data/
-│   └── referencias.json# Bibliografía de descargas
-├── tools/
-│   ├── search.py       # Herramientas web para México
-│   ├── inegi_client.py # API Oficial de BISE INEGI
-│   └── descargador_masivo.py # Motor asíncrono para bases gubernamentales
-├── agents/
-│   ├── supervisor.py   # El orquestador Human-in-the-Loop
-│   ├── investigador.py # Especialista en scraping
-│   └── agro_experto.py # Especialista agrícola/estadístico
-├── scripts/
-│   ├── main_supervisor.py # Terminal interactiva
-│   └── descargar_catalogo.py # Scripts de descarga masiva (SIAP, UNAM, etc)
-├── pyproject.toml      # Configuración de uv
-└── .env.example
+uv run python scripts/main_supervisor_v2.py
 ```
 
 ---
 
-## [._.] [SCHEMA] Schema de Salida (DatosRegion)
+## [CONFIG] [AGENTES: YAML] Configuracion Granular de Modelos (Hot-Reload)
 
-El JSON generado sigue el schema `DatosRegion` con los siguientes campos principales:
+Cada uno de los 22 agentes y mini-agentes puede configurarse independientemente en `config/agentes.yaml` sin modificar una sola linea de codigo, con soporte para **Google Gemini**, **Groq**, **Cohere** y **Ollama (Local)**:
 
-```json
-{
-  "region": "La Mixteca, Oaxaca",
-  "estado": "Oaxaca",
-  "coordenadas_aprox": [17.5, -97.5],
-  "altitud_media_msnm": 1800,
-  "clima": { "clasificacion_koppen": "BSk", ... },
-  "suelo": { "tipo_suelo_dominante": "Leptosol", ... },
-  "polinizadores": [
-    {
-      "nombre_comun": "Abeja melipona",
-      "nombre_cientifico": "Melipona beecheii",
-      "tipo": "abeja",
-      "fuente": "https://enciclovida.mx/..."
-    }
-  ],
-  "cultivos": [...],
-  "flora_nativa": [...],
-  "problematicas_ecologicas": [...],
-  "recomendaciones_preliminares": [...],
-  "fuentes_consultadas": [...],
-  "fecha_extraccion": "2026-09-11"
-}
+```yaml
+modelos:
+  mini_tavily:          { proveedor: Gemini, modelo: gemini-2.0-flash,       temperatura: 0.1 }
+  mini_academico:       { proveedor: Cohere, modelo: command-r7b-12-2024,   temperatura: 0.1 }
+  mini_referencias_extractor: { proveedor: Cohere, modelo: command-r7b-12-2024, temperatura: 0.0 }
+  mini_scraper:         { proveedor: Groq,   modelo: llama-3.1-8b-instant,   temperatura: 0.0 }
+  fusionador_extractor: { proveedor: Groq,   modelo: llama3-70b-8192,        temperatura: 0.0 }
+  fusionador_agronomo:  { proveedor: Gemini, modelo: gemini-3.5-flash-lite,  temperatura: 0.0 }
+  agente_sintetizador:  { proveedor: Gemini, modelo: gemini-2.0-flash,       temperatura: 0.1 }
+  supervisor:           { proveedor: Gemini, modelo: gemini-2.0-flash,       temperatura: 0.1 }
+
+configuracion:
+  max_ciclos_retroalimentacion: 3
+  confirmacion_descarga: manual
+  flow_type: Hibrido
+  activar_3d_automatico: false
+  max_iteraciones_supervisor: 3
+  guardar_dossier_local: true
 ```
 
+### Tolerancia a Fallos y Fallback Cruzado
+El sistema cuenta con resiliencia multicapa:
+* **Introspeccion dinamica**: Valida modelos en vivo con las APIs (`models_gemini.py`, `models_groq.py`, `models_cohere.py`) y mitiga errores 404 por modelos discontinuados.
+* **Fallback cruzado automatico**: Conmuta transparentemente: `Gemini -> Groq -> Cohere -> Ollama (Local)` ante errores de cuota (HTTP 429) o fallos de red.
+* **Operatividad 100% Offline**: Soporte nativo para Ollama (`llama3.1:latest`) en caso de no disponer de conexion a internet o API keys.
+
+Desde la CLI interactiva puedes inspeccionar y cambiar modelos en caliente:
+* `/config-agentes` : Muestra la tabla de configuracion de los 22 agentes.
+* `/agente mini_academico command-r7b-12-2024` : Cambia el modelo en tiempo de ejecucion.
+* `/agente-provider mini_academico Cohere` : Cambia el proveedor en tiempo de ejecucion.
+
 ---
 
-## (^-^) [PROVEEDORES] Proveedores LLM
+## [._.] [DATOS] Catalogos Locales, RAG y Almacenamiento de Dossiers
 
-El sistema soporta intercambio transparente entre proveedores:
+1. **Catalogo de Biodiversidad Mexicana** (`data/descargas_masivas/`):
+   * 1,188 especies de flora nativa y melifera.
+   * 2,734 especies de polinizadores nativos (abejas, meliponas, abejorros, colibries, mariposas).
+   * Consulta rapida con `/biodiversidad <termino>` o mediante la herramienta `buscar_biodiversidad_local`.
 
-| Proveedor | Modelo Default | Uso Recomendado |
-|-----------|---------------|-----------------|
-| **Gemini** | `gemini-flash-latest` | Producción (structured output nativo) |
-| **Groq** | `llama-3.3-70b-versatile` | Velocidad (inferencia ultra-rápida) |
-| **Cohere** | `command-r7b-12-2024` | Alternativa (RAG optimizado) |
+2. **Base de Conocimientos RAG Vectorial** (`data/knowledge/`):
+   * `suelo/`: Estudios edafologicos, retencion de humedad, texturas, NPK.
+   * `agricultura/`: Guias tecnicas SADER/INIFAP y manuales de rotacion de cultivos.
+   * `polinizadores/`: Guias CONABIO, calendarios florales y preservacion.
+   * `general/`: Normativas SEMARNAT y manuales agroecologicos integrales.
+   * Administracion con `/rag status` y `/rag rebuild`.
+
+3. **Repositorio Jerarquico Regional y Descargas (`regiones/<estado>/<municipio>/`)**:
+   * `regiones/<estado>/<municipio>/referencias.json`: Indice estructurado de metadatos, fuentes y estado de descarga especifico de la region.
+   * `regiones/<estado>/<municipio>/diagnostico.md`: Dossier agroecologico completo en 8 secciones tecnicas con frontmatter YAML.
+   * `regiones/<estado>/<municipio>/datos_relevantes.json`: Parametros estructurados (clima, suelo, rotacion regenerativa en 4 grupos, flora, polinizadores y control biologico) para alimentar la precision del sistema.
+   * `regiones/<estado>/<municipio>/fuentes/`: Documentos organizados en subcarpetas `pdf/` (articulos y monografias), `html/` (webs y archivos `.md` limpios para RAG), y `csv/` (datos estadisticos).
+   * *Compatibilidad*: Se preserva en paralelo la ruta base `data/reportes/` y el indice maestro `data/referencias.json`.
 
 ---
 
-## (*_*) [REGIONES] Regiones de Prueba Sugeridas
+## [V3] [DIAGRAMAS] Diagramas Estaticos del Sistema
 
-| Región | Características |
-|--------|----------------|
-| La Mixteca, Oaxaca | Zona semiárida, agricultura tradicional, erosión severa |
-| Selva Lacandona, Chiapas | Alta biodiversidad, muchos polinizadores, deforestación |
-| Valle del Yaqui, Sonora | Agricultura intensiva, zona árida, riego tecnificado |
-| Sierra Norte, Puebla | Bosque mesófilo, café de sombra, meliponicultura |
-| Península de Yucatán | Abejas meliponas, selva baja, apicultura |
+Generados automaticamente en la carpeta `docs/` con `uv run python scripts/generar_diagrama_v3.py` (o comando `/diagrama` en CLI):
+* `docs/arquitectura_v3.png` — Grafo Maestro Inter-Grupo V3 con Sintetizador
+* `docs/arquitectura_agentes.png` — Arquitectura Global de Agentes
+* `docs/grupo_extractor.png` — Sub-grafo Grupo Extractor
+* `docs/grupo_agronomo.png` — Sub-grafo Grupo Agronomo con Loop
+* `docs/grupo_ecologico.png` — Sub-grafo Grupo Ecologico con Loop
+* `docs/grupo_3d.png` — Sub-grafo Generador 3D con Validacion Pydantic
+* `docs/grupo_supervisor.png` — Arquitectura del Supervisor Maestro
+
+---
+
+## (^-^)/ [COMANDOS: CLI] Comandos Principales de la Terminal
+
+| Comando | Descripcion |
+|---------|-------------|
+| `/help` | Manual de ayuda completo y explicacion de carpetas RAG |
+| `/config` | Estado de API keys y modelo global |
+| `/config-agentes` | Tabla de configuracion de los 22 agentes |
+| `/agente <nombre> <modelo>` | Cambia el modelo de un agente en caliente |
+| `/agente-provider <nombre> <prov>` | Cambia el proveedor de un agente (Gemini, Groq, Cohere, Ollama) |
+| `/run [region]` | Ejecuta el flujo V3 completo; muestra el **Resumen Ejecutivo de 8 secciones** en consola y solicita confirmacion `[S/n]` para guardar el dossier y descargar las fuentes |
+| `/run3d [region]` | Ejecuta el flujo V3, muestra el resumen ejecutivo y compila el modelo espacial 3D |
+| `/biodiversidad <especie>` | Consulta el catalogo de 3,922+ especies nativas |
+| `/rag [status\|rebuild]` | Consulta o reconstruye la base RAG |
+| `/diagrama` | Regenera los 7 diagramas estaticos PNG en `docs/` |
+| `/clear` | Limpia la sesion actual |
+| `/exit` | Cierra la terminal |
 
 ---
 
 ## (^-^)/ [LICENCIA] Licencia
 
-Proyecto académico — Sistema Interactivo Inteligente para el Manejo Agrícola y Preservación de Polinizadores (AgriPoli).
+Proyecto academico — Sistema Interactivo Inteligente para el Manejo Agricola y Preservacion de Polinizadores (AgriPoli).
+

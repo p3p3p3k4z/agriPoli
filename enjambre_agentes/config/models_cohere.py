@@ -19,11 +19,10 @@ except ImportError:
     from keys import COHERE_API_KEY
 
 FALLBACK_MODELS_COHERE = [
-    "command-r-plus-08-2024",
-    "command-r-plus",
+    "command-r7b-12-2024",
     "command-r-08-2024",
-    "command-r",
-    "command-light",
+    "command-r-plus-08-2024",
+    "c4ai-aya-expanse-32b",
 ]
 
 

@@ -36,3 +36,4 @@ class Mapa3D(BaseModel):
     elementos_botanicos: List[PlantaEstructurada] = Field(description="Lista de todas las plantas y cultivos con sus coordenadas")
     indicador_degradacion_inicial: float = Field(description="Índice de degradación original (input del modelo Random Forest)")
     notas_agronomicas: List[str] = Field(description="Instrucciones breves de manejo para la interfaz de usuario")
+    referencias_fuentes: Optional[List[str]] = Field(default_factory=list, description="Lista de fuentes oficiales, manuales de siembra y estandares espaciales")
