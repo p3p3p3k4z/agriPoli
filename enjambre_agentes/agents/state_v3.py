@@ -62,6 +62,8 @@ class EstadoGrupoAgronomo(TypedDict, total=False):
     referencias_fuentes: list[str]    # Lista consolidada de URLs y documentos citados
     # Propuestas generadas
     propuestas_agricolas: list[dict]
+    prompt_cultivo_terreno: str       # Prompt hiperrealista de recuadro de cultivo / parcela (mini_prompt_cultivo)
+    detalles_cultivo_terreno: dict
     # Control del loop de retroalimentacion
     anotacion_fusionador_agro: str  # Mensaje de error/correccion del fusionador
     ciclo_agronomo: int             # Contador de ciclos (max = config YAML)
@@ -119,6 +121,8 @@ class EstadoGrupo3D(TypedDict, total=False):
     json_threejs_final: dict
     validacion_3d: str            # "VALIDO" | "INVALIDO"
     ciclo_3d: int                 # Reintentos si el JSON es invalido (max 2)
+    prompt_isla_polinizadora: str  # Prompt hiperrealista para modelado 3D (mini_prompt_isla)
+    detalles_isla_polinizadora: dict
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -150,6 +154,10 @@ class EstadoMaestroV3(TypedDict, total=False):
     resumen_ejecutivo: str        # Reporte integral y estructurado en Markdown
     dossier_tecnico: dict         # Metadatos tecnicos consolidados
     referencias_fuentes: Annotated[list[str], operator.add]  # URLs y citas acumuladas
+    prompt_isla_polinizadora: str  # Prompt hiperrealista para modelado 3D de isla polinizadora
+    detalles_isla_polinizadora: dict
+    prompt_cultivo_terreno: str    # Prompt hiperrealista de parcela de cultivo
+    detalles_cultivo_terreno: dict
     # Configuracion activa (leida del YAML al inicio)
     flow_type: str
     max_ciclos: int

@@ -154,6 +154,9 @@ Generados automaticamente en la carpeta `docs/` con `uv run python scripts/gener
 | `/agente-provider <nombre> <prov>` | Cambia el proveedor de un agente (Gemini, Groq, Cohere, Ollama) |
 | `/run [region]` | Ejecuta el flujo V3 completo; muestra el **Resumen Ejecutivo de 8 secciones** en consola y solicita confirmacion `[S/n]` para guardar el dossier y descargar las fuentes |
 | `/run3d [region]` | Ejecuta el flujo V3, muestra el resumen ejecutivo y compila el modelo espacial 3D |
+| `/prompt-isla [region]` | Genera el prompt hiperrealista para modelado 3D de una **Isla Polinizadora** adaptado a la ecorregión (e.g. La Mixteca, Costa, etc.) en español e inglés |
+| `/prompt-cultivo [region]` | Genera el prompt hiperrealista de un **recuadro de terreno agrícola** con cultivos asociados y tipo de suelo ecorregional |
+| `/prompt-maestro [region]` | Genera el prompt hiperrealista extenso donde **conviven la Isla Polinizadora en el centro de la Parcela Agrícola** en plena sinergia biológica |
 | `/biodiversidad <especie>` | Consulta el catalogo de 3,922+ especies nativas |
 | `/rag [status\|rebuild]` | Consulta o reconstruye la base RAG |
 | `/diagrama` | Regenera los 7 diagramas estaticos PNG en `docs/` |

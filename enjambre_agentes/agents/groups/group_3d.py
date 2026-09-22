@@ -170,6 +170,25 @@ def nodo_validador_3d(state: EstadoGrupo3D) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# MINI-AGENTE: Prompt Isla Polinizadora para Modelado 3D
+# ─────────────────────────────────────────────────────────────────────────────
+
+def nodo_mini_prompt_isla(state: EstadoGrupo3D) -> dict:
+    """Genera el prompt hiperrealista de la isla polinizadora adaptado a la region."""
+    region = state.get("region", "region desconocida")
+    try:
+        from agents.mini_prompt_isla import generar_prompt_isla_polinizadora
+        res = generar_prompt_isla_polinizadora(region, guardar_en_disco=True)
+        return {
+            "prompt_isla_polinizadora": res.get("prompt_espanol", ""),
+            "detalles_isla_polinizadora": res.get("propiedades_extraidas", {}),
+        }
+    except Exception as e:
+        log_error(f"Error en nodo_mini_prompt_isla: {e}", kaomoji="[X_X]")
+        return {"prompt_isla_polinizadora": "", "detalles_isla_polinizadora": {}}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # ROUTER
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -192,21 +211,24 @@ def router_validacion_3d(state: EstadoGrupo3D) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def crear_grafo_3d():
-    """Compila y retorna el sub-grafo del Grupo Generador 3D con mini-agente de referencias."""
+    """Compila y retorna el sub-grafo del Grupo Generador 3D con mini-agentes de referencias y prompts."""
     workflow = StateGraph(EstadoGrupo3D)
 
     workflow.add_node("fusionador_3d",       nodo_fusionador_3d)
     workflow.add_node("mini_referencias_3d", nodo_mini_referencias_3d)
+    workflow.add_node("mini_prompt_isla",    nodo_mini_prompt_isla)
     workflow.add_node("estructurador",       nodo_estructurador)
     workflow.add_node("validador_3d",        nodo_validador_3d)
 
     # Fork paralelo desde START
     workflow.add_edge(START,                 "fusionador_3d")
     workflow.add_edge(START,                 "mini_referencias_3d")
+    workflow.add_edge(START,                 "mini_prompt_isla")
 
     # Join hacia estructurador
     workflow.add_edge("fusionador_3d",       "estructurador")
     workflow.add_edge("mini_referencias_3d", "estructurador")
+    workflow.add_edge("mini_prompt_isla",    "estructurador")
 
     workflow.add_edge("estructurador",       "validador_3d")
 

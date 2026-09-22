@@ -127,6 +127,12 @@ def mostrar_ayuda():
   {GREEN}/rag rebuild{RESET}              Reconstruye indices vectoriales FAISS.
   {GREEN}/run [region]{RESET}             Ejecuta el Enjambre Jerarquico V3 completo.
   {GREEN}/run3d [region]{RESET}           Ejecuta el Enjambre V3 + Generador 3D.
+  {GREEN}/prompt-isla <reg>{RESET}        Genera prompt hiperrealista de Isla Polinizadora para 3D.
+                             Ej: /prompt-isla la mixteca, oaxaca
+  {GREEN}/prompt-cultivo <reg>{RESET}     Genera prompt de recuadro de parcela con cultivos asociados.
+                             Ej: /prompt-cultivo la mixteca, oaxaca (o /parcela)
+  {GREEN}/prompt-maestro <reg>{RESET}     Genera prompt extenso fusionando Isla Polinizadora + Parcela.
+                             Ej: /prompt-maestro la mixteca, oaxaca (o /prompt-fusionado)
   {GREEN}/clear{RESET} o {GREEN}/reset{RESET}            Limpia historial e inicia nueva sesion.
   {GREEN}/exit{RESET} o {GREEN}/quit{RESET} o {GREEN}/q{RESET}        Cierra la sesion del supervisor.
 
@@ -566,6 +572,69 @@ async def procesar_comando(linea: str, state: dict) -> bool:
                 return True
         if region:
             await ejecutar_pipeline_enjambre(region, state, activar_3d=True)
+
+    elif cmd in ("/prompt-isla", "/isla", "/isla-polinizadora", "/prompt"):
+        region = arg
+        if not region:
+            try:
+                region = input("Nombre de la region para generar prompt de Isla Polinizadora (ej. la mixteca, oaxaca): ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return True
+        if region:
+            from agents.mini_prompt_isla import generar_prompt_isla_polinizadora
+            log_info(f"Invocando mini_prompt_isla para: '{region}'...", kaomoji="(^o^)/")
+            res_isla = generar_prompt_isla_polinizadora(region)
+            print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
+            print(f"{GREEN}{BOLD}[MINI_PROMPT_ISLA] PROMPT HIPERREALISTA DE ISLA POLINIZADORA{RESET}")
+            print(f"{YELLOW}Región:{RESET} {res_isla['region'].title()} | {YELLOW}Archivos:{RESET} {res_isla.get('archivo_txt', '')}")
+            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+            print(f"{BOLD}--- PROMPT EN ESPAÑOL (DALL-E 3 / BING) ---{RESET}\n")
+            print(f"{res_isla['prompt_espanol']}\n")
+            print(f"{BOLD}--- PROMPT EN INGLÉS (MIDJOURNEY V6 / FLUX.1) ---{RESET}\n")
+            print(f"{DIM}{res_isla['prompt_ingles']}{RESET}\n")
+            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+
+    elif cmd in ("/prompt-cultivo", "/parcela", "/cultivo", "/terreno"):
+        region = arg
+        if not region:
+            try:
+                region = input("Nombre de la region para generar prompt de parcela de cultivo (ej. la mixteca, oaxaca): ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return True
+        if region:
+            from agents.mini_prompt_cultivo import generar_prompt_cultivo_terreno
+            log_info(f"Invocando mini_prompt_cultivo para: '{region}'...", kaomoji="(^o^)/")
+            res_cultivo = generar_prompt_cultivo_terreno(region)
+            print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
+            print(f"{GREEN}{BOLD}[MINI_PROMPT_CULTIVO] PROMPT DE PARCELA Y ASOCIACIÓN DE CULTIVOS{RESET}")
+            print(f"{YELLOW}Región:{RESET} {res_cultivo['region'].title()} | {YELLOW}Archivos:{RESET} {res_cultivo.get('archivo_txt', '')}")
+            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+            print(f"{BOLD}--- PROMPT EN ESPAÑOL (DALL-E 3 / BING) ---{RESET}\n")
+            print(f"{res_cultivo['prompt_espanol']}\n")
+            print(f"{BOLD}--- PROMPT EN INGLÉS (MIDJOURNEY V6 / FLUX.1) ---{RESET}\n")
+            print(f"{DIM}{res_cultivo['prompt_ingles']}{RESET}\n")
+            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+
+    elif cmd in ("/prompt-maestro", "/prompt-fusionado", "/fusionador", "/paisaje"):
+        region = arg
+        if not region:
+            try:
+                region = input("Nombre de la region para generar prompt maestro fusionado (ej. la mixteca, oaxaca): ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return True
+        if region:
+            from agents.fusionador_prompts import fusionar_prompts_agroecologicos
+            log_info(f"Invocando fusionador_prompts para: '{region}'...", kaomoji="(^o^)/")
+            res_maestro = fusionar_prompts_agroecologicos(region)
+            print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
+            print(f"{GREEN}{BOLD}[FUSIONADOR_PROMPTS] PROMPT MAESTRO: ISLA POLINIZADORA + PARCELA{RESET}")
+            print(f"{YELLOW}Región:{RESET} {res_maestro['region'].title()} | {YELLOW}Archivos:{RESET} {res_maestro.get('archivo_txt', '')}")
+            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+            print(f"{BOLD}--- PROMPT EN ESPAÑOL EXTENSO (DALL-E 3 / BING / CONCEPT ART) ---{RESET}\n")
+            print(f"{res_maestro['prompt_espanol_extenso']}\n")
+            print(f"{BOLD}--- PROMPT EN INGLÉS EXTENSO (MIDJOURNEY V6 / FLUX.1 / 3D SCENE) ---{RESET}\n")
+            print(f"{DIM}{res_maestro['prompt_ingles_extenso']}{RESET}\n")
+            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
 
     elif cmd in ("/clear", "/reset"):
         state["chat_history"] = []

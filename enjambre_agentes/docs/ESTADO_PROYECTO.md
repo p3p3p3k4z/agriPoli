@@ -231,6 +231,7 @@ Actualmente el sistema integra **22 agentes y mini-agentes activos**, clasificad
 | `mini_inegi_agro` | Indicadores socioeconomicos y agro | `consultar_indicador_inegi`, `usar_inegipy_catalogo` | Gemini `gemini-flash-lite-latest` (0.1) |
 | `mini_calculadora` | Matematica agronomica formal | `calcular_agronomia` con motor simbolico SymPy | Gemini `gemini-flash-lite-latest` (0.0) |
 | `mini_rotacion_regenerativa` | Secuencias de rotacion N/D/P/H | Formato estructurado 4 grupos funcionales (Nitrogeno, Descompactacion, Plagas, Hidrico) | Gemini `gemini-3.5-flash-lite` (0.2) |
+| `mini_prompt_cultivo` | Prompts de recuadro de parcela agrícola | Asociación de cultivos, textura de suelo, surcos y manejo hídrico para render 3D | Gemini `gemini-flash-lite-latest` (0.2) |
 | `fusionador_agronomo` | Join, arbitro y auditor de viabilidad | LLM Arbitro: si detecta incongruencia edafoclimatica, emite `RECHAZADO` y retroalimenta al `mini_cultivo` o `mini_rotacion` | Gemini `gemini-3.5-flash-lite` (0.0) |
 
 ---
@@ -273,9 +274,11 @@ Actualmente el sistema integra **22 agentes y mini-agentes activos**, clasificad
 
 | Sub-Agente / Nodo | Rol | Herramientas / Funciones | Config YAML Default |
 |-------------------|-----|--------------------------|---------------------|
-| `fusionador_3d` | Reconciliador espacial de propuestas | LLM Directo: consolida coordenadas relativas (x,y,z), radios y paletas hex | Gemini `gemini-2.0-flash` (0.0) |
-| `estructurador` | Compilador de esquema Pydantic | `invocar_estructurador` con structured output sobre `Mapa3D` | Gemini `gemini-2.0-flash` (0.0) |
-| `validador_3d` | Auditor sintactico y dimensional | Validador Pydantic contra `schemas/threejs_schema.py`. Si falla, reintenta | Gemini `gemini-2.0-flash` (0.0) |
+| `fusionador_3d` | Reconciliador espacial de propuestas | LLM Directo: consolida coordenadas relativas (x,y,z), radios y paletas hex | Gemini `gemini-flash-lite-latest` (0.0) |
+| `mini_referencias_3d` | Estandares espaciales y fuentes | `buscar_tavily_mexico` con directivas FAO, SADER e INIFAP | Gemini `gemini-flash-lite-latest` (0.1) |
+| `mini_prompt_isla` | Generador de prompts para modelado 3D | Extraccion ecorregional botanica (dosel, sotobosque, cobertura, polinizadores, biocontrol, cultivos circundantes y horizonte) | Gemini `gemini-flash-lite-latest` (0.2) |
+| `estructurador` | Compilador de esquema Pydantic | `invocar_estructurador` con structured output sobre `Mapa3D` | Gemini `gemini-flash-lite-latest` (0.0) |
+| `validador_3d` | Auditor sintactico y dimensional | Validador Pydantic contra `schemas/threejs_schema.py`. Si falla, reintenta | Gemini `gemini-flash-lite-latest` (0.0) |
 
 ---
 

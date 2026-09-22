@@ -435,6 +435,28 @@ async def guardar_dossier_regional(
     except Exception as e:
         log_error(f"Error guardando referencias_fuentes: {e}", kaomoji="[X_X]")
 
+    # 4.5. Generar y guardar prompts hiperrealistas (Isla Polinizadora y Parcela de Cultivo)
+    try:
+        from agents.mini_prompt_isla import generar_prompt_isla_polinizadora
+        res_prompt_isla = generar_prompt_isla_polinizadora(region, str(project_root), guardar_en_disco=True)
+        registro_local["prompt_isla_polinizadora"] = res_prompt_isla.get("prompt_espanol", "")
+    except Exception as e:
+        log_info(f"Generacion automatica de prompt isla omitida: {e}", kaomoji="[o_o]")
+
+    try:
+        from agents.mini_prompt_cultivo import generar_prompt_cultivo_terreno
+        res_prompt_cultivo = generar_prompt_cultivo_terreno(region, str(project_root), guardar_en_disco=True)
+        registro_local["prompt_cultivo_terreno"] = res_prompt_cultivo.get("prompt_espanol", "")
+    except Exception as e:
+        log_info(f"Generacion automatica de prompt cultivo omitida: {e}", kaomoji="[o_o]")
+
+    try:
+        from agents.fusionador_prompts import fusionar_prompts_agroecologicos
+        res_prompt_maestro = fusionar_prompts_agroecologicos(region, str(project_root), guardar_en_disco=True)
+        registro_local["prompt_agroecologico_maestro"] = res_prompt_maestro.get("prompt_espanol_extenso", "")
+    except Exception as e:
+        log_info(f"Generacion automatica de prompt maestro omitida: {e}", kaomoji="[o_o]")
+
     # 5. Actualizar indice global master en data/referencias.json
     global_referencias_path = project_root / "data" / "referencias.json"
     registro_global = {
@@ -446,6 +468,9 @@ async def guardar_dossier_regional(
         "referencias_json": f"{ruta_relativa}/{nombre_ref_desc}",
         "diagnostico_md": f"{ruta_relativa}/{nombre_diag_desc}",
         "datos_relevantes_json": f"{ruta_relativa}/{nombre_datos_desc}",
+        "prompt_isla_txt": f"{ruta_relativa}/prompt_isla_polinizadora.txt",
+        "prompt_cultivo_txt": f"{ruta_relativa}/prompt_cultivo_terreno.txt",
+        "prompt_maestro_txt": f"{ruta_relativa}/prompt_agroecologico_maestro.txt",
         "fecha": ahora_str,
         "total_fuentes": len(referencias_fuentes),
         "archivos_descargados": conteo_tipos,

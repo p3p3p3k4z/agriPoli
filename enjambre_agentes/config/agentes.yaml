@@ -115,6 +115,14 @@ modelos:
     proveedor: Gemini
     modelo: gemini-3.5-flash-lite
     temperatura: 0.1
+  mini_prompt_isla:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.2
+  mini_prompt_cultivo:
+    proveedor: Gemini
+    modelo: gemini-flash-lite-latest
+    temperatura: 0.2
 configuracion:
   max_ciclos_retroalimentacion: 3
   confirmacion_descarga: manual
