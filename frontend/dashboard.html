@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPoli | Dashboard Ecosistémico - Oaxaca</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</head>
+<body>
+    
+    <div class="bento-grid">
+        
+        <!-- Cabecera Principal / Mosaico Superior -->
+        <header class="panel tile-header">
+            <div>
+                <h1>AgriPoli | Dashboard Ecosistémico</h1>
+                <p>Sistema Interactivo Inteligente para el Manejo Agrícola Regenerativo y Preservación de Polinizadores • <strong>Región Oaxaca</strong></p>
+            </div>
+            <div class="tile-header-actions">
+                <span class="pill pill-yellow" style="font-size: 0.9rem; padding: 0.4rem 0.8rem; font-weight: 600;">OAXACA ACTIVO</span>
+                <!-- 
+                =======================================================
+                REGIONES CHIAPAS Y GUERRERO DESACTIVADAS POR EL USUARIO
+                <button class="region-btn" data-state="Chiapas">Chiapas</button>
+                <button class="region-btn" data-state="Guerrero">Guerrero</button>
+                =======================================================
+                -->
+                <a href="maching_learning.html" class="btn">Módulo ML →</a>
+                <a href="inicio.html" class="btn">← Volver al Inicio</a>
+            </div>
+        </header>
+
+        <!-- Mosaico 1: Render 3D Compacto -->
+        <div class="panel tile-viewer">
+            <div class="mosaic-title">
+                <span class="pill pill-green">VISOR 3D</span>
+                <h3>Isla Polinizadora</h3>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+                Estructura de la isla en 3D interactivo. Usa el ratón o dedos para orbitar y rotar el modelo.
+            </p>
+            <div class="compact-viewer-container">
+                <model-viewer id="island-viewer" 
+                    src="modelos/isla_oaxaca.glb" 
+                    alt="Modelo 3D de la Isla Polinizadora de Oaxaca"
+                    auto-rotate 
+                    camera-controls
+                    shadow-intensity="1"
+                    environment-image="neutral"
+                    exposure="1.4">
+                </model-viewer>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                <span class="tag" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">360° Rotación</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">isla_oaxaca.glb</span>
+            </div>
+        </div>
+
+        <!-- Mosaico 2: Agroecosistema y Cultivos -->
+        <div class="panel tile-cultivos" id="mosaic-cultivos">
+            <div class="mosaic-title">
+                <span class="pill pill-yellow">AGROECOSISTEMA</span>
+                <h3>Cultivos & Contexto</h3>
+            </div>
+            <p>Cargando información agronómica de Oaxaca...</p>
+        </div>
+
+        <!-- Mosaico 3: Polinizadores Clave -->
+        <div class="panel tile-polinizadores" id="mosaic-polinizadores">
+            <div class="mosaic-title">
+                <span class="pill pill-orange">ENTOMOLOGÍA</span>
+                <h3>Polinizadores Clave</h3>
+            </div>
+            <p>Cargando polinizadores benéficos...</p>
+        </div>
+
+        <!-- Mosaico 4: Flores y Estrato Herbáceo / Sotobosque -->
+        <div class="panel tile-flores" id="mosaic-flores">
+            <div class="mosaic-title">
+                <span class="pill pill-yellow">ESTRATO HERBÁCEO</span>
+                <h3>Flores & Néctar</h3>
+            </div>
+            <p>Cargando catálogo floral...</p>
+        </div>
+
+        <!-- Mosaico 5: Dosel Arbóreo / Árboles Protectores -->
+        <div class="panel tile-arboles" id="mosaic-arboles">
+            <div class="mosaic-title">
+                <span class="pill pill-green">ESTRATO ARBÓREO</span>
+                <h3>Dosel & Árboles</h3>
+            </div>
+            <p>Cargando especies arbóreas...</p>
+        </div>
+
+        <!-- Mosaico 6: Insectos Auxiliares & Control Biológico -->
+        <div class="panel tile-auxiliares" id="mosaic-auxiliares">
+            <div class="mosaic-title">
+                <span class="pill pill-purple">CONTROL BIOLÓGICO</span>
+                <h3>Insectos Auxiliares</h3>
+            </div>
+            <p>Cargando fauna depredadora benéfica...</p>
+        </div>
+
+        <!-- Mosaico 7: Infraestructura Ecológica -->
+        <div class="panel tile-infraestructura" id="mosaic-infraestructura">
+            <div class="mosaic-title">
+                <span class="pill pill-blue">HÁBITAT & BIOESTRUCTURA</span>
+                <h3>Infraestructura de Soporte</h3>
+            </div>
+            <p>Cargando elementos biofísicos...</p>
+        </div>
+
+    </div>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>

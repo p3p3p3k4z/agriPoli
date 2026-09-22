@@ -1,0 +1,153 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #1a3a8f 0%, #2c5aa0 100%);
+    color: white;
+    padding: 25px 30px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.content {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.map-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 30px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.mexico-cifras__mapa {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.mexico-cifras__mapa path {
+    fill: #d1d8e0;
+    stroke: #ffffff;
+    stroke-width: 1;
+    transition: all 0.3s ease;
+}
+
+.mexico-cifras__mapa path:hover {
+    fill: #4a7bff;
+    cursor: pointer;
+    transform: translateY(-2px);
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.2));
+}
+
+.mexico-cifras__mapa path.active {
+    fill: #4a7bff;
+}
+
+.info-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 20px;
+    border-left: 4px solid #2c5aa0;
+}
+
+.info-panel h3 {
+    color: #2c5aa0;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.state-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.state-item {
+    background: white;
+    padding: 12px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.state-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.state-name {
+    font-weight: 600;
+    color: #2c5aa0;
+    margin-bottom: 5px;
+}
+
+.state-id {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    color: #6c757d;
+    font-size: 0.9rem;
+    border-top: 1px solid #eaeaea;
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .state-info {
+        grid-template-columns: 1fr;
+    }
+}

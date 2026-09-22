@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriPoli | Machine Learning Predictivo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="bento-grid">
+        
+        <header class="panel bento-header">
+            <h1>AgriPoli | Módulo Predictivo ML</h1>
+            <p>Sistema Interactivo Inteligente • Evaluación de variables ambientales para Flora y Polinizadores</p>
+        </header>
+
+        <aside class="panel bento-nav">
+            <h3>Categorías</h3>
+            <div class="region-selection">
+                <button class="btn active" id="btnPolinizadores" onclick="mostrarPolinizadores()">Polinizadores</button>
+                <button class="btn" id="btnFlora" onclick="mostrarFlora()">Flora Endémica</button>
+            </div>
+            <a href="inicio.html" class="btn" style="margin-top: auto;">← Volver al Inicio</a>
+        </aside>
+
+        <!-- Contenedor Principal ML (Ocupará el resto del grid) -->
+        <div class="panel" style="grid-column: span 9; grid-row: span 3; display: flex; flex-direction: column;">
+            
+            <!-- POLINIZADORES SECTION -->
+            <div id="MPolinizadores" class="ml-section" style="width: 100%;">
+                <h2>Polinizadores Compatibles</h2>
+                <p style="margin-bottom: 2rem;">Ingresa las condiciones actuales de tu terreno.</p>
+            
+                <div class="flex-row">
+                    <div class="input-container" style="flex: 1;">
+                        <label>Temperatura (°C):</label>
+                        <input type="number" id="temperaturaPol" step="0.1" placeholder="Ej. 24.5">
+                    </div>
+                    <div class="input-container" style="flex: 1;">
+                        <label>Altitud (m):</label>
+                        <input type="number" id="altitudPol" step="1" placeholder="Ej. 1500">
+                    </div>
+                </div>
+                
+                <button class="btn" style="margin-top: 1rem;" onclick="solicitarPrediccionPolinizadores()">Generar Predicción</button>
+                <p id="resultadoPol" style="margin-top: 1rem; color: var(--color-orange); font-weight: 500;"></p>
+            
+                <div id="grafPol">
+                    <img id="graficaPol" alt="Gráfica de predicción" style="display:none">
+                </div>
+            </div>
+            
+            <!-- FLORA SECTION -->
+            <div id="MFlora" class="ml-section" style="width: 100%;">
+                <h2>Flora Endémica Compatible</h2>
+                <p style="margin-bottom: 2rem;">Evaluaremos las variables ambientales de tu región.</p>
+            
+                <div class="flex-row">
+                    <div class="input-container" style="flex: 1;">
+                        <label>Temperatura (°C):</label>
+                        <input type="number" id="temperaturaFlora" step="0.1" placeholder="Ej. 24.5">
+                    </div>
+                    <div class="input-container" style="flex: 1;">
+                        <label>Humedad (%):</label>
+                        <input type="number" id="humedadFlora" step="0.1" placeholder="Ej. 65.0">
+                    </div>
+                    <div class="input-container" style="flex: 1;">
+                        <label>Altitud (m):</label>
+                        <input type="number" id="altitudFlora" step="1" placeholder="Ej. 1500">
+                    </div>
+                </div>
+            
+                <button class="btn" style="margin-top: 1rem;" onclick="solicitarPrediccionFlora()">Generar Predicción</button>
+                <p id="resultadoFlora" style="margin-top: 1rem; color: var(--color-orange); font-weight: 500;"></p>
+            
+                <div id="grafFlora">
+                    <img id="graficaFlora" alt="Gráfica de predicción" style="display:none">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    async function solicitarPrediccionPolinizadores() {
+        const temp = document.getElementById("temperaturaPol").value;
+        const alt = document.getElementById("altitudPol").value;
+        const resText = document.getElementById("resultadoPol");
+
+        if (!temp || !alt) {
+            resText.innerText = "Por favor, ingresa temperatura y altitud.";
+            return;
+        }
+
+        resText.innerText = "Procesando...";
+
+        try {
+            const respPlot = await fetch(`http://localhost:8040/polinizadores/?temperatura=${temp}&altitud=${alt}&grafica=true`);
+            const blob = await respPlot.blob();
+            const url = URL.createObjectURL(blob);
+            const grafica = document.getElementById("graficaPol");
+            grafica.src = url;
+            grafica.style.display = "block";
+            resText.innerText = "";
+        } catch (error) {
+            console.error("Error al solicitar predicción:", error);
+            resText.innerText = "Error al conectarse al servidor.";
+        }
+    }
+
+    async function solicitarPrediccionFlora() {
+        const temp = document.getElementById("temperaturaFlora").value;
+        const hum = document.getElementById("humedadFlora").value;
+        const alt = document.getElementById("altitudFlora").value;
+        const resText = document.getElementById("resultadoFlora");
+
+        if (!temp || !alt) {
+            resText.innerText = "Por favor, ingresa temperatura, humedad y altitud.";
+            return;
+        }
+        
+        resText.innerText = "Procesando...";
+
+        try {
+            const respPlot = await fetch(`http://localhost:8040/floraEndemica/?temperatura=${temp}&humedad=${hum}&altitud=${alt}&grafica=true`);
+            const blob = await respPlot.blob();
+            const url = URL.createObjectURL(blob);
+            const grafica = document.getElementById("graficaFlora");
+            grafica.src = url;
+            grafica.style.display = "block";
+            resText.innerText = "";
+        } catch (error) {
+            console.error("Error al solicitar predicción:", error);
+            resText.innerText = "Error al conectarse al servidor.";
+        }
+    }
+
+    function mostrarFlora() {
+        document.getElementById("MFlora").style.display = "block";        
+        document.getElementById("MPolinizadores").style.display = "none"; 
+        document.getElementById("btnFlora").classList.add("active");
+        document.getElementById("btnPolinizadores").classList.remove("active");
+    }
+
+    function mostrarPolinizadores() {
+        document.getElementById("MPolinizadores").style.display = "block"; 
+        document.getElementById("MFlora").style.display = "none";  
+        document.getElementById("btnPolinizadores").classList.add("active");
+        document.getElementById("btnFlora").classList.remove("active");        
+    }
+
+    window.onload = () => {
+        mostrarPolinizadores();
+    }
+</script>
+</body>
+</html>

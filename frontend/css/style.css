@@ -1,0 +1,449 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+    /* Gruvbox Light Palette */
+    --bg-main: #fbf1c7;
+    --bg-panel: #ebdbb2;
+    --bg-panel-alt: #f2e5bc;
+    --text-main: #3c3836;
+    --text-muted: #504945;
+    --border-color: #bdae93;
+    --border-strong: #7c6f64;
+    
+    --color-red: #cc241d;
+    --color-green: #98971a;
+    --color-yellow: #d79921;
+    --color-blue: #458588;
+    --color-purple: #b16286;
+    --color-aqua: #689d6a;
+    --color-orange: #d65d0e;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding: 2rem;
+    /* No blur, no shadows, pure flat design */
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--border-strong);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+p {
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+/* Flat Panel (Bento Item) */
+.panel {
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-strong);
+    padding: 1.5rem;
+    border-radius: 4px; /* Minimalist rounding */
+}
+
+/* Bento Grid Layout for Dashboard Mosaic */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.25rem;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+/* Header Tile */
+.tile-header {
+    grid-column: span 12;
+    background-color: var(--color-green);
+    color: var(--bg-main);
+    border: 2px solid var(--text-main);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.25rem 1.75rem;
+}
+
+.tile-header h1 {
+    color: var(--bg-main);
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0.25rem;
+    font-size: 1.75rem;
+}
+
+.tile-header p {
+    color: var(--bg-panel-alt);
+    font-size: 0.95rem;
+}
+
+.tile-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Specific Mosaic Tiles */
+.tile-viewer {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    background-color: var(--bg-panel);
+}
+
+.tile-viewer .compact-viewer-container {
+    width: 100%;
+    height: 250px;
+    border: 2px solid var(--border-strong);
+    background-color: var(--bg-panel-alt);
+    margin-top: 0.75rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.tile-cultivos {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-polinizadores {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-flores {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-arboles {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-auxiliares {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-infraestructura {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Mosaic Components */
+.mosaic-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--border-strong);
+    font-size: 1.15rem;
+}
+
+.mosaic-title .pill {
+    font-size: 0.75rem;
+    font-family: 'Roboto Mono', monospace;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--text-main);
+    background-color: var(--bg-main);
+    border-radius: 2px;
+}
+
+.pill-green { background-color: var(--color-green); color: var(--bg-main); border-color: var(--text-main); }
+.pill-yellow { background-color: var(--color-yellow); color: var(--text-main); border-color: var(--text-main); }
+.pill-aqua { background-color: var(--color-aqua); color: var(--bg-main); border-color: var(--text-main); }
+.pill-orange { background-color: var(--color-orange); color: var(--bg-main); border-color: var(--text-main); }
+.pill-purple { background-color: var(--color-purple); color: var(--bg-main); border-color: var(--text-main); }
+.pill-blue { background-color: var(--color-blue); color: var(--bg-main); border-color: var(--text-main); }
+
+/* Tag clouds for items (crops, climate) */
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+}
+
+.tag {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-strong);
+    padding: 0.35rem 0.7rem;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.tag-highlight {
+    background-color: var(--bg-panel-alt);
+    border-color: var(--color-orange);
+    color: var(--color-orange);
+}
+
+/* Cards inside tiles */
+.mosaic-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+}
+
+.mosaic-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.species-card {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-strong);
+    padding: 0.65rem 0.85rem;
+    transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.species-card:hover {
+    background-color: var(--bg-panel-alt);
+    border-color: var(--text-main);
+}
+
+.species-card.accent-green { border-left-color: var(--color-green); }
+.species-card.accent-yellow { border-left-color: var(--color-yellow); }
+.species-card.accent-orange { border-left-color: var(--color-orange); }
+.species-card.accent-blue { border-left-color: var(--color-blue); }
+.species-card.accent-purple { border-left-color: var(--color-purple); }
+
+.species-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.2rem;
+}
+
+.species-name {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.species-scientific {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.species-role {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    line-height: 1.35;
+}
+
+.note-box {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    background-color: var(--bg-main);
+    border: 1px dashed var(--border-strong);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Responsive adjustment */
+@media (max-width: 1024px) {
+    .tile-viewer, .tile-cultivos, .tile-polinizadores {
+        grid-column: span 12;
+    }
+    .tile-flores, .tile-arboles, .tile-auxiliares, .tile-infraestructura {
+        grid-column: span 12;
+    }
+}
+
+/* Buttons */
+button, .btn {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 2px solid var(--border-strong);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0px; /* Sharp minimalist */
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: 'Roboto Mono', monospace;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover, .btn:hover {
+    background-color: var(--bg-panel-alt);
+    border-color: var(--text-main);
+}
+
+button.active, .btn.active {
+    background-color: var(--color-yellow);
+    border-color: var(--text-main);
+    color: var(--text-main);
+}
+
+/* Region Selection (Vertical for sidebar) */
+.region-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Viewer specific */
+#island-viewer {
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    outline: none;
+    background-color: var(--bg-panel-alt); /* Matches panel */
+}
+
+/* Legend Styling (Flat) */
+.legend-item {
+    display: flex;
+    align-items: flex-start;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 2px;
+}
+
+.legend-item:hover {
+    background-color: var(--bg-panel-alt);
+}
+
+.legend-item img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 1px solid var(--border-strong);
+}
+
+.legend-item h4 {
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.legend-item p {
+    font-size: 0.85rem;
+}
+
+/* Forms and Inputs */
+.input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+label {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+input {
+    background-color: var(--bg-main);
+    border: 2px solid var(--border-strong);
+    color: var(--text-main);
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    border-radius: 0;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--color-blue);
+    background-color: #fff;
+}
+
+/* Generic layout helpers */
+.flex-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.ml-section {
+    display: none;
+}
+
+#graficaFlora, #graficaPol {
+    max-width: 100%;
+    border: 2px solid var(--border-strong);
+    margin-top: 1.5rem;
+    display: block;
+}
+
+/* Home Page Specific Grid */
+.home-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.home-hero {
+    grid-column: span 6;
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-strong);
+}
+
+.home-highlight {
+    grid-column: span 6;
+    background-color: var(--color-aqua);
+    color: var(--bg-main);
+    border: 2px solid var(--text-main);
+}
+
+.home-highlight p {
+    color: var(--bg-main);
+    font-size: 1.1rem;
+}
+
+.home-nav {
+    grid-column: span 6;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}

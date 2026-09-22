@@ -1,0 +1,42 @@
+Estado,NombreComún,NombreCientifico,Familia,TipoFlora,TemperaturaMin,TemperaturaMax,HumedadMin,HumedadMax,AltitudMin,AltitudMax,TemperaturaPromedio,AltitudPromedio
+Yucatán,Dzidzilché,Gymnopodium floribundum,Convolvulaceae,Melífera,25,30,60,80,0,50,27.5,25
+Yucatán,Tahonal,Viguiera dentata,Asteraceae,Melífera,25,30,60,80,0,50,27.5,25
+Yucatán,Chacté,Cordia dodecandra,Boraginaceae,Nectarífera,26,31,65,85,0,60,28.5,30
+Yucatán,Maya,Pseudobombax ellipticum,Bombacaceae,Nativa,24,29,55,75,0,100,26.5,50
+Veracruz,Caoba,Swietenia macrophylla,Meliaceae,Nectarífera,24,28,70,90,0,1000,26,500
+Veracruz,Ramón,Brosimum alicastrum,Moraceae,Nectarífera,24,28,70,90,0,1000,26,500
+Veracruz,Cuachalalate,Amphipterygium adstringens,Anacardiaceae,Melífera,22,27,60,85,100,900,24.5,500
+Veracruz,Flor de mayo,Hamelia patens,Rubiaceae,Nativa,23,28,65,85,50,950,25.5,500
+Chiapas,Guarumbo,Bursera simaruba,Burseraceae,Nectarífera,22,26,70,90,0,1200,24,600
+Chiapas,Guayacán,Guaiacum sanctum,Zygophyllaceae,Nectarífera,22,26,70,90,0,1200,24,600
+Chiapas,Caoba roja,Swietenia macrophylla,Meliaceae,Nativa,23,27,65,85,100,1100,25,600
+Chiapas,Ceiba,Ceiba pentandra,Malvaceae,Nativa,24,28,70,90,200,1200,26,700
+Oaxaca,Ainea,Ainea conzattii,Iridaceae,Nativa,20,25,60,80,1000,2000,22.5,1500
+Oaxaca,Guaje,Leucaena leucocephala,Fabaceae,Nativa,20,25,60,80,1000,2000,22.5,1500
+Oaxaca,Flor de mayo,Hamelia patens,Rubiaceae,Nectarífera,21,26,65,85,950,1950,23.5,1450
+Oaxaca,Árbol del Tule,Taxodium mucronatum,Cupressaceae,Nativa,19,24,55,80,1000,2100,21.5,1550
+San Luis Potosí,Biznaga changuitos,Mammillaria albicoma,Cactaceae,Nativa,18,22,30,50,1500,2000,20,1750
+San Luis Potosí,Palmilla de San Pedro,Leuchtenbergia principis,Cactaceae,Nativa,18,22,30,50,1500,2000,20,1750
+San Luis Potosí,Cardón,Pachycereus pringlei,Cactaceae,Melífera,20,25,35,55,1450,1950,22.5,1700
+San Luis Potosí,Palo verde,Cercidium floridum,Fabaceae,Nectarífera,19,24,30,60,1400,1900,21.5,1650
+Jalisco,Guaje de olla,Leucaena leucocephala,Fabaceae,Nativa,22,27,50,70,800,1500,24.5,1150
+Jalisco,Jacaranda,Jacaranda mimosifolia,Bignoniaceae,Melífera,20,25,55,75,700,1400,22.5,1050
+Jalisco,Mangle rojo,Rhizophora mangle,Rhizophoraceae,Nectarífera,24,29,70,90,0,50,26.5,25
+Jalisco,Tepehuaje,Leucaena esculenta,Fabaceae,Nativa,21,26,50,75,700,1450,23.5,1075
+Guanajuato,Flor de azotea,Ipomoea wolcottiana,Convolvulaceae,Melífera,18,23,40,60,1500,1800,20.5,1650
+Guanajuato,Palo blanco,Lysiloma divaricatum,Fabaceae,Nectarífera,19,24,35,60,1400,1750,21.5,1575
+Guanajuato,Guayabo,Psidium guajava,Myrtaceae,Nativa,20,25,50,70,1350,1800,22.5,1575
+Guanajuato,Ciruelo silvestre,Prunus domestica,Rosaceae,Nativa,18,23,40,65,1300,1750,20.5,1525
+Chihuahua,Maguey,Agave americana,Asparagaceae,Melífera,15,22,25,50,1100,2100,18.5,1600
+Chihuahua,Tejocote,Crataegus mexicana,Rosaceae,Nectarífera,12,20,25,50,1150,2250,16,1700
+Tabasco,Cacao,Theobroma cacao,Malvaceae,Nectarífera,24,28,70,90,0,200,26,100
+Tabasco,Macuil,Xylopia frutescens,Annonaceae,Melífera,25,29,65,85,0,150,27,75
+Tabasco,Guano,Calophyllum brasiliense,Calophyllaceae,Nativa,24,28,70,90,0,200,26,100
+Tabasco,Chilamate,Cordia alliodora,Boraginaceae,Nectarífera,23,27,60,85,0,180,25,90
+Puebla,Árbol de Navidad,Metrosideros excelsa,Meliaceae,Nativa,18,23,45,65,1200,1800,20.5,1500
+Puebla,Almendro,Prunus amygdalus,Rosaceae,Melífera,19,24,40,65,1100,1750,21.5,1425
+Puebla,Ciruelo,Prunus domestica,Rosaceae,Nectarífera,18,23,45,65,1150,1800,20.5,1475
+Puebla,Guayabo,Psidium guajava,Myrtaceae,Nativa,20,25,50,70,1200,1850,22.5,1525
+Veracruz,Mango,Mangifera indica,Anacardiaceae,Nectarífera,24,28,65,85,0,900,26,450
+Veracruz,Lima,Citrus aurantifolia,Rutaceae,Nectarífera,25,30,60,85,0,850,27.5,425
+Veracruz,Nanche,Byrsonima crassifolia,Malpighiaceae,Melífera,23,28,55,80,0,950,25.5,475

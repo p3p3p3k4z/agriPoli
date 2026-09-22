@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  polinizadores-app:
+    build: ./polinizadores_app
+    container_name: polinizadores_app
+    volumes:
+      - ./polinizadores_app:/app  
+      - ./data:/data  
+    ports:
+      - "8040:8000" 
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
