@@ -183,45 +183,124 @@ def generar_prompt_isla_polinizadora(
     terrenos = props.get("terrenos", "maíz, café, agave y frutales")
     horizonte = props.get("horizonte", f"el horizonte realista de {region_nombre}, con luz natural, sombras suaves y colores vivos pero realistas")
 
-    # 1. Ensamblar Prompt en Español (Plantilla exacta solicitada por el usuario)
-    prompt_es = (
-        f"Imagen frontal hiperrealista a nivel del suelo de una Isla Polinizadora circular en {region_nombre}, "
-        f"ubicada en el centro de cuatro terrenos agrícolas. La isla está llena de vida:\n"
-        f"Dosel de árboles medianos: {dosel}, con hojas verdes y flores visibles.\n"
-        f"Sotobosque: arbustos y flores ({sotobosque}) con colores vivos y texturas naturales.\n"
-        f"Cobertura del suelo: {cobertura}, con flores claramente visibles.\n"
-        f"Polinizadores en acción: {polinizadores} volando y posándose sobre flores.\n"
-        f"Insectos auxiliares: {insectos_aux} visibles en el follaje.\n"
-        f"Infraestructura ecológica: {infraestructura}.\n"
-        f"El círculo de la isla debe ser claramente visible desde el frente, mostrando su forma y vida interna. "
-        f"Detrás y alrededor se ven los 4 terrenos agrícolas completos: {terrenos}, con caminos o bordes de parcela bien definidos.\n"
-        f"El fondo muestra {horizonte}. Todos los detalles de vegetación, flores y polinizadores deben ser nítidos, "
-        f"como en una fotografía profesional a nivel del suelo, lista para referencia de modelado 3D."
+    # 1. Prompt Principal: Vista Isométrica 3D a 45° (Diorama Aislado PNG Cutout)
+    prompt_es_principal = (
+        f"Render 3D fotorrealista y fotografía de estudio en ángulo isométrico a 45 grados de una Isla Polinizadora "
+        f"circular en {region_nombre}, presentada como un asset de diorama flotante recortado estilo PNG sobre fondo blanco puro "
+        f"de estudio sin ningún fondo ambiental. La isla circular muestra su estratificación botánica completa:\n"
+        f"• Dosel de árboles medianos: {dosel}, con hojas verdes y flores visibles.\n"
+        f"• Sotobosque floral: arbustos y flores ({sotobosque}) con colores vivos y texturas naturales.\n"
+        f"• Cobertura del suelo: {cobertura}, con flores densamente visibles.\n"
+        f"• Polinizadores en acción: {polinizadores} volando y posándose activamente sobre flores.\n"
+        f"• Insectos auxiliares: {insectos_aux} visibles en el follaje.\n"
+        f"• Infraestructura ecológica integrada: {infraestructura}.\n"
+        f"Separación espacial y segmentación 3D: Los árboles, arbustos, flores, bebedero, hotel de insectos y polinizadores "
+        f"están dispuestos con una separación física moderada y márgenes limpios entre sí, con siluetas bien definidas y sin "
+        f"sobreposiciones densas o marañas confusas, permitiendo una detección y extracción precisa de objetos y mallas 3D individuales.\n"
+        f"El perímetro circular de suelo fértil y piedras delimitadoras está perfectamente definido y recortado con bordes nítidos. "
+        f"Iluminación suave de estudio fotográfico con sutil sombra de contacto debajo de la base, fondo blanco sólido uniforme sin cielo, "
+        f"sin horizonte ni paisaje exterior, máxima fidelidad botánica y volumétrica para modelado 3D de assets independientes."
     )
 
-    # 2. Ensamblar Prompt en Inglés (Optimizado para Midjourney v6, Flux.1 y DALL-E 3)
-    prompt_en = (
-        f"Hyperrealistic eye-level ground-level frontal photograph of a lush circular Pollinator Island in {region_nombre}, "
-        f"positioned at the intersection of four agricultural fields. The circular sanctuary is teeming with biodiversity: "
-        f"Medium tree canopy featuring {dosel} with dense green foliage and visible blooming flowers. "
-        f"Understory filled with native flowering shrubs ({sotobosque}) displaying vibrant natural colors and rich leaf textures. "
+    prompt_en_principal = (
+        f"Photorealistic 3D asset render and studio photograph at a 45-degree isometric angle of a lush circular "
+        f"Pollinator Island in {region_nombre}, presented as a floating diorama asset isolated on a solid pure white background, "
+        f"clean PNG cutout style. The circular sanctuary displays complete botanical stratification: "
+        f"Medium tree canopy with {dosel} with lush foliage and blooming flowers. "
+        f"Understory filled with flowering shrubs ({sotobosque}) with vibrant natural colors and rich leaf textures. "
         f"Ground cover carpeted with blooming {cobertura}. "
         f"Active pollinators in flight and perching: {polinizadores}. "
-        f"Beneficial biological control insects visible: {insectos_aux}. "
-        f"Ecological infrastructure clearly integrated: {infraestructura}. "
-        f"The boundary of the circular pollinator island is clearly defined in the foreground. Surrounding and behind it are the 4 full agricultural plots: "
-        f"{terrenos}, bordered by clean earthen access paths. "
-        f"The background features {horizonte}. Crisp professional botanical photography, sharp focus on insects and petals, natural ambient daylight, "
-        f"soft shadows, volumetric lighting, photorealistic 8k, ideal as an agroecological 3D modeling concept reference --ar 16:9 --v 6.1"
+        f"Beneficial biocontrol insects: {insectos_aux}. "
+        f"Integrated ecological infrastructure: {infraestructura}. "
+        f"3D Object Separation & Mesh Isolation: Individual trees, shrubs, flower patches, insect hotel, waterer, and hovering pollinators "
+        f"are arranged with distinct spatial clearance and clean spacing between elements, showing well-defined non-overlapping silhouettes "
+        f"and clear negative space around each asset, specifically optimized for automated image-to-3D mesh reconstruction and semantic object detection. "
+        f"Crisp circular boundary of fertile organic soil and natural edging stones cleanly cut in 3D space. "
+        f"Soft diffused studio lighting with subtle contact shadow underneath, completely isolated on pure white void, "
+        f"no background scenery, no sky, no landscape, extreme botanical fidelity --no background, sky, mountains, landscape, trees outside island --ar 1:1 --v 6.1 --style raw"
     )
+
+    # 2. Perspectiva 1: Vista Cenital / Top-Down (Planta Ortogonal a 90°)
+    perspectiva_cenital_es = (
+        f"Fotografía cenital ortogonal a 90 grados perpendicular directamente desde arriba de la Isla Polinizadora circular "
+        f"de {region_nombre}, aislada como un asset recortado estilo PNG sobre fondo blanco puro de estudio. "
+        f"Se aprecia con claridad milimétrica la geometría concéntrica del santuario con elementos ligeramente separados y organizados: "
+        f"en el núcleo el dosel de {dosel}, rodeado en círculo por el sotobosque ({sotobosque}), la alfombra floral de cobertura ({cobertura}), "
+        f"los bebederos y hotel de insectos ({infraestructura}), con abejas y mariposas ({polinizadores}) capturadas en vuelo con siluetas despegadas sobre las flores. "
+        f"Espaciado limpio entre copas y plantas para detección de instancias 3D. Borde circular perfecto y limpio sin fondo ambiental, "
+        f"iluminación cenital uniforme de estudio para plano botánico y texturizado 2D/3D."
+    )
+    perspectiva_cenital_en = (
+        f"Top-down orthographic 90-degree zenithal photograph directly from above of the circular Pollinator Island in {region_nombre}, "
+        f"isolated as a clean PNG cutout asset on a solid pure white studio background. Concentric circular layout with clear spatial clearance "
+        f"between elements: tree canopy of {dosel} at the center, surrounded by flowering understory ({sotobosque}), carpeted ground cover ({cobertura}), "
+        f"integrated {infraestructura}, and active pollinators ({polinizadores}) hovering with distinct separation above blossoms. "
+        f"Clean negative space between individual foliage clusters for 3D instance segmentation. Perfectly sharp circular boundary, "
+        f"flat even overhead studio illumination, no outdoor scenery --no background, sky, horizon --ar 1:1 --v 6.1 --style raw"
+    )
+
+    # 3. Perspectiva 2: Vista Frontal a Ras de Suelo / Nivel de Ojo (Ground-Level / Macro)
+    perspectiva_ras_suelo_es = (
+        f"Fotografía frontal a ras de suelo y nivel de ojo de la Isla Polinizadora en {region_nombre}, recortada sobre fondo blanco "
+        f"neutro de estudio estilo PNG sin paisaje exterior. Enfoque macro hiperdetallado en el primer plano: la base de tierra fértil, "
+        f"pétalos y hojas de {cobertura}, tallos de {sotobosque} y abejas nativas ({polinizadores}) pecoreando a milímetros de la cámara. "
+        f"Hacia el plano medio se elevan los árboles de {dosel} y se distingue el hotel de insectos de {infraestructura}. "
+        f"Siluetas de insectos y flores despegadas del fondo y con separación limpia entre ramas para segmentación de profundidad y mallas 3D. "
+        f"Profundidad de campo fotográfica profesional con sujeto nítido y recorte perfecto hacia fondo blanco puro de estudio."
+    )
+    perspectiva_ras_suelo_en = (
+        f"Eye-level frontal ground-level macro photograph of the Pollinator Island in {region_nombre}, isolated against a solid "
+        f"pure white studio background, clean PNG cutout aesthetic with no outdoor background. Sharp focus on the immediate foreground: "
+        f"rich soil bed, vibrant petals of {cobertura}, flowering stems of {sotobosque}, and active native pollinators ({polinizadores}) "
+        f"foraging closely. Rising in midground is the canopy of {dosel} and insect hotel of {infraestructura}. "
+        f"Clean separation and uncluttered spacing between foreground petals and flying insects for accurate depth map and 3D mesh isolation. "
+        f"Shallow depth of field with razor-sharp macro botanical details, pure white background void, studio softbox lighting --no background, sky, horizon --ar 16:9 --v 6.1 --style raw"
+    )
+
+    # 4. Perspectiva 3: Vista Axonométrica 3/4 en Corte Transversal (Cross-Section Diorama 3D)
+    perspectiva_corte_3d_es = (
+        f"Render 3D de alta gama en perspectiva axonométrica 3/4 con corte transversal vertical del sustrato de la Isla Polinizadora "
+        f"en {region_nombre}, aislado estilo PNG sobre fondo blanco puro. El modelo tipo diorama exhibe la vegetación superficial "
+        f"({dosel}, {sotobosque}, {cobertura}, {polinizadores} y {infraestructura}) dispuesta con separación limpia de siluetas, "
+        f"y una rebanada vertical limpia del perfil de suelo circular: capa de humus, tierra vegetal fértil y raíces vivas bien ramificadas. "
+        f"Espacio y definición geométrica optimizados para reconstrucción de mallas 3D independientes sin mallas fundidas. "
+        f"Acabado de concept art agronómico y asset para motor 3D, sin fondo ambiental, iluminación de estudio de 3 puntos con sutil oclusión ambiental en la base."
+    )
+    perspectiva_corte_3d_en = (
+        f"High-end 3D cross-section diorama render from a 3/4 axometric perspective of the circular Pollinator Island in {region_nombre}, "
+        f"isolated PNG cutout asset on a solid pure white background. The 3D model showcases both surface biodiversity "
+        f"({dosel}, {sotobosque}, {cobertura}, active pollinators, and {infraestructura}) arranged with clean individual spacing, "
+        f"and a clean vertical slice cut of the circular soil profile: organic mulch layer, dark crumb topsoil, and visible healthy root systems. "
+        f"Clear object contours and spatial separation tailored for multi-object 3D mesh extraction and neural reconstruction without fused vertices. "
+        f"Concept art diorama asset style, no environmental background, studio 3-point lighting with soft contact ambient occlusion --no background, sky, horizon --ar 16:9 --v 6.1 --style raw"
+    )
+
+    perspectivas = {
+        "cenital_90deg": {
+            "nombre": "Vista Cenital / Top-Down (Planta Ortogonal 90°)",
+            "prompt_es": perspectiva_cenital_es,
+            "prompt_en": perspectiva_cenital_en,
+        },
+        "ras_suelo_macro": {
+            "nombre": "Vista Frontal a Ras de Suelo / Nivel de Ojo (Ground-Level)",
+            "prompt_es": perspectiva_ras_suelo_es,
+            "prompt_en": perspectiva_ras_suelo_en,
+        },
+        "corte_transversal_3d": {
+            "nombre": "Vista Axonométrica 3/4 en Corte Transversal (Cross-Section Diorama)",
+            "prompt_es": perspectiva_corte_3d_es,
+            "prompt_en": perspectiva_corte_3d_en,
+        },
+    }
 
     resultado = {
         "region": region,
         "estado": estado,
         "municipio": municipio,
         "propiedades_extraidas": props,
-        "prompt_espanol": prompt_es,
-        "prompt_ingles": prompt_en,
+        "prompt_espanol": prompt_es_principal,
+        "prompt_ingles": prompt_en_principal,
+        "perspectivas": perspectivas,
     }
 
     # Guardar en disco en la carpeta regional correspondiente
@@ -230,20 +309,35 @@ def generar_prompt_isla_polinizadora(
             carpetas = asegurar_directorio_regional(region, str(project_root))
             region_dir = carpetas["region_dir"]
             
-            # 1. Guardar archivo de texto plano con los prompts
+            # 1. Guardar archivo de texto plano con los prompts y perspectivas
             archivo_txt_desc = region_dir / f"prompt_isla_polinizadora_{estado}_{municipio}.txt"
             archivo_txt_alias = region_dir / "prompt_isla_polinizadora.txt"
             
             contenido_txt = (
                 f"========================================================================\n"
-                f"PROMPT PARA GENERACIÓN DE IMÁGENES — ISLA POLINIZADORA EN {region_nombre.upper()}\n"
+                f"PROMPTS DE IMAGEN: ISLA POLINIZADORA EN {region_nombre.upper()}\n"
                 f"Generado por: AgriPoli V3 (mini_prompt_isla)\n"
+                f"Formato: Asset 3D / PNG Cutout Aislado en Fondo Blanco (Sin Fondo Exterior)\n"
                 f"========================================================================\n\n"
-                f"--- [OPCIÓN 1: PROMPT EN ESPAÑOL (DALL-E 3 / Bing Image Creator)] ---\n\n"
-                f"{prompt_es}\n\n"
                 f"------------------------------------------------------------------------\n"
-                f"--- [OPCIÓN 2: PROMPT EN INGLÉS (Midjourney v6 / Flux.1 / SDXL)] ---\n\n"
-                f"{prompt_en}\n\n"
+                f"1. PROMPT PRINCIPAL (Vista Isométrica 3D a 45° — Diorama Aislado PNG)\n"
+                f"------------------------------------------------------------------------\n\n"
+                f"[ESPAÑOL]\n{prompt_es_principal}\n\n"
+                f"[INGLÉS (Midjourney v6.1 / Flux.1)]\n{prompt_en_principal}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"2. PERSPECTIVAS Y AJUSTES DE CÁMARA JUGANDO CON LA MISMA ESCENA\n"
+                f"------------------------------------------------------------------------\n\n"
+                f"▶ PERSPECTIVA A: {perspectivas['cenital_90deg']['nombre']}\n"
+                f"[ESPAÑOL]\n{perspectiva_cenital_es}\n\n"
+                f"[INGLÉS]\n{perspectiva_cenital_en}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"▶ PERSPECTIVA B: {perspectivas['ras_suelo_macro']['nombre']}\n"
+                f"[ESPAÑOL]\n{perspectiva_ras_suelo_es}\n\n"
+                f"[INGLÉS]\n{perspectiva_ras_suelo_en}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"▶ PERSPECTIVA C: {perspectivas['corte_transversal_3d']['nombre']}\n"
+                f"[ESPAÑOL]\n{perspectiva_corte_3d_es}\n\n"
+                f"[INGLÉS]\n{perspectiva_corte_3d_en}\n\n"
                 f"========================================================================\n"
             )
             
@@ -282,3 +376,4 @@ if __name__ == "__main__":
     print("-"*70)
     print(res["prompt_ingles"])
     print("="*70 + "\n")
+

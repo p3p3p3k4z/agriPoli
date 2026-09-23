@@ -3,139 +3,509 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgriPoli | Machine Learning Predictivo</title>
+  <title>AgriPoli | Predicción de Polinizadores y Flora</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Estilos de soporte para el módulo de predicción */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.75rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-main);
+    }
+    .status-indicator {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .status-on { background-color: var(--color-green); }
+    .status-off { background-color: var(--color-red); }
+
+    .preset-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0 1.25rem 0;
+      align-items: center;
+    }
+    .preset-chip {
+      background-color: var(--bg-panel-alt);
+      border: 1px solid var(--border-strong);
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      font-family: 'Roboto Mono', monospace;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: background-color 0.15s ease;
+    }
+    .preset-chip:hover {
+      background-color: var(--color-yellow);
+    }
+
+    .results-container {
+      margin-top: 1.25rem;
+      padding: 1.25rem;
+      background-color: var(--bg-panel-alt);
+      border: 2px solid var(--border-strong);
+      display: none;
+    }
+
+    .prediction-tags {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .pollinator-card {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-left: 5px solid var(--color-orange);
+      padding: 0.75rem 1rem;
+    }
+    .pollinator-card h4 {
+      font-size: 1rem;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .pollinator-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .flora-table-wrapper {
+      max-height: 280px;
+      overflow-y: auto;
+      margin-top: 0.75rem;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-main);
+    }
+    .flora-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    .flora-table th {
+      background-color: var(--color-yellow);
+      color: var(--text-main);
+      padding: 0.5rem 0.75rem;
+      font-family: 'Roboto Mono', monospace;
+      position: sticky;
+      top: 0;
+      border-bottom: 2px solid var(--border-strong);
+    }
+    .flora-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+    .flora-table tr:hover {
+      background-color: var(--bg-panel-alt);
+    }
+
+    .chart-box {
+      margin-top: 1.25rem;
+      text-align: center;
+      background-color: var(--bg-main);
+      border: 2px solid var(--border-strong);
+      padding: 1rem;
+    }
+    .chart-box img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid var(--border-color);
+    }
+    .chart-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      border-top-color: var(--color-orange);
+      animation: spin 1s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .icon-svg {
+      width: 16px;
+      height: 16px;
+      vertical-align: -2px;
+      fill: currentColor;
+    }
+  </style>
 </head>
 <body>
 
     <div class="bento-grid">
         
-        <header class="panel bento-header">
-            <h1>AgriPoli | Módulo Predictivo ML</h1>
-            <p>Sistema Interactivo Inteligente • Evaluación de variables ambientales para Flora y Polinizadores</p>
+        <header class="panel bento-header tile-header">
+            <div>
+                <h1>AgriPoli | Predicción de Polinizadores y Flora</h1>
+                <p>Consulta qué polinizadores y plantas se adaptan a las condiciones de tu terreno.</p>
+            </div>
+            <div class="tile-header-actions">
+                <div id="mlServerStatus" class="status-badge">
+                    <span class="status-indicator status-off" id="statusDot"></span>
+                    <span id="statusText">Verificando API...</span>
+                </div>
+                <a href="dashboard.html" class="btn">Dashboard →</a>
+                <a href="inicio.html" class="btn">← Inicio</a>
+            </div>
         </header>
 
-        <aside class="panel bento-nav">
+        <aside class="panel bento-nav" style="grid-column: span 3; display: flex; flex-direction: column; gap: 1rem;">
             <h3>Categorías</h3>
             <div class="region-selection">
                 <button class="btn active" id="btnPolinizadores" onclick="mostrarPolinizadores()">Polinizadores</button>
-                <button class="btn" id="btnFlora" onclick="mostrarFlora()">Flora Endémica</button>
+                <button class="btn" id="btnFlora" onclick="mostrarFlora()">Plantas adaptadas</button>
             </div>
-            <a href="inicio.html" class="btn" style="margin-top: auto;">← Volver al Inicio</a>
+
+            <div class="note-box" style="margin-top: 0.5rem;">
+                <strong>Modelos en este prototipo:</strong>
+                <p style="font-size: 0.8rem; margin-top: 0.4rem; line-height: 1.45;">
+                    <strong>Polinizadores:</strong> Clasificador de árbol de decisión (<em>DecisionTreeClassifier</em> de Scikit-Learn) entrenado con temperatura y altitud promedio por estado.<br><br>
+                    <strong>Flora:</strong> Búsqueda por rangos de temperatura, humedad y altitud sobre una tabla de 41 plantas registradas.
+                </p>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px dashed var(--border-strong);">
+                <p style="font-size: 0.75rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace;">
+                    Servidor: localhost:8040
+                </p>
+            </div>
         </aside>
 
-        <!-- Contenedor Principal ML (Ocupará el resto del grid) -->
-        <div class="panel" style="grid-column: span 9; grid-row: span 3; display: flex; flex-direction: column;">
+        <!-- Contenedor Principal ML -->
+        <main class="panel" style="grid-column: span 9; display: flex; flex-direction: column;">
             
             <!-- POLINIZADORES SECTION -->
             <div id="MPolinizadores" class="ml-section" style="width: 100%;">
-                <h2>Polinizadores Compatibles</h2>
-                <p style="margin-bottom: 2rem;">Ingresa las condiciones actuales de tu terreno.</p>
+                <div class="mosaic-title">
+                    <h2>Polinizadores recomendados</h2>
+                </div>
+                <p style="margin-bottom: 0.75rem;">Ingresa la temperatura y altitud de tu zona para estimar qué grupos de polinizadores son viables.</p>
             
+                <div class="preset-container">
+                    <span style="font-size: 0.8rem; font-weight: 600;">Valores de referencia:</span>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetPol(22.5, 1550)">Oaxaca (22.5°C, 1550 m)</button>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetPol(27.0, 550)">Chiapas (27°C, 550 m)</button>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetPol(28.5, 250)">Guerrero (28.5°C, 250 m)</button>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetPol(18.0, 2200)">Altiplano (18°C, 2200 m)</button>
+                </div>
+
                 <div class="flex-row">
                     <div class="input-container" style="flex: 1;">
-                        <label>Temperatura (°C):</label>
-                        <input type="number" id="temperaturaPol" step="0.1" placeholder="Ej. 24.5">
+                        <label for="temperaturaPol">Temperatura promedio (°C):</label>
+                        <input type="number" id="temperaturaPol" step="0.1" value="22.5" placeholder="Ej. 22.5">
                     </div>
                     <div class="input-container" style="flex: 1;">
-                        <label>Altitud (m):</label>
-                        <input type="number" id="altitudPol" step="1" placeholder="Ej. 1500">
+                        <label for="altitudPol">Altitud (m sobre el nivel del mar):</label>
+                        <input type="number" id="altitudPol" step="1" value="1550" placeholder="Ej. 1550">
                     </div>
                 </div>
                 
-                <button class="btn" style="margin-top: 1rem;" onclick="solicitarPrediccionPolinizadores()">Generar Predicción</button>
-                <p id="resultadoPol" style="margin-top: 1rem; color: var(--color-orange); font-weight: 500;"></p>
+                <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                    <button class="btn active" id="btnEjecutarPol" onclick="solicitarPrediccionPolinizadores()">
+                        Calcular predicción
+                    </button>
+                    <span id="loaderPol" style="display: none; font-size: 0.9rem; color: var(--text-main);">
+                        <span class="spinner"></span> Procesando con Python...
+                    </span>
+                </div>
+                <p id="resultadoPol" style="margin-top: 0.75rem; color: var(--color-orange); font-weight: 600;"></p>
             
-                <div id="grafPol">
-                    <img id="graficaPol" alt="Gráfica de predicción" style="display:none">
+                <!-- Resultados estructurados -->
+                <div id="resBoxPol" class="results-container">
+                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Polinizadores compatibles</h3>
+                    <div id="tarjetasPol" class="prediction-tags"></div>
+                </div>
+
+                <!-- Gráfica generada por Python -->
+                <div id="boxGrafPol" class="chart-box" style="display: none;">
+                    <div class="chart-toolbar">
+                        <span><strong>Gráfica de dispersión:</strong> Temperatura vs Altitud</span>
+                        <a id="downloadPolLink" href="#" download="grafica_polinizadores.png" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">Descargar imagen</a>
+                    </div>
+                    <img id="graficaPol" alt="Gráfica de predicción de polinizadores">
                 </div>
             </div>
             
             <!-- FLORA SECTION -->
             <div id="MFlora" class="ml-section" style="width: 100%;">
-                <h2>Flora Endémica Compatible</h2>
-                <p style="margin-bottom: 2rem;">Evaluaremos las variables ambientales de tu región.</p>
+                <div class="mosaic-title">
+                    <h2>Plantas adaptadas a tu clima</h2>
+                </div>
+                <p style="margin-bottom: 0.75rem;">Consulta qué plantas registradas se desarrollan en el rango de temperatura, humedad y altitud indicado.</p>
             
+                <div class="preset-container">
+                    <span style="font-size: 0.8rem; font-weight: 600;">Valores de referencia:</span>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetFlora(24.0, 65.0, 1200)">Bosque templado (24°C, 65%, 1200 m)</button>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetFlora(26.0, 75.0, 450)">Zona tropical húmeda (26°C, 75%, 450 m)</button>
+                    <button type="button" class="preset-chip" onclick="aplicarPresetFlora(20.0, 50.0, 1800)">Valle seco (20°C, 50%, 1800 m)</button>
+                </div>
+
                 <div class="flex-row">
                     <div class="input-container" style="flex: 1;">
-                        <label>Temperatura (°C):</label>
-                        <input type="number" id="temperaturaFlora" step="0.1" placeholder="Ej. 24.5">
+                        <label for="temperaturaFlora">Temperatura (°C):</label>
+                        <input type="number" id="temperaturaFlora" step="0.1" value="24.0" placeholder="Ej. 24.0">
                     </div>
                     <div class="input-container" style="flex: 1;">
-                        <label>Humedad (%):</label>
-                        <input type="number" id="humedadFlora" step="0.1" placeholder="Ej. 65.0">
+                        <label for="humedadFlora">Humedad relativa (%):</label>
+                        <input type="number" id="humedadFlora" step="0.1" value="65.0" placeholder="Ej. 65.0">
                     </div>
                     <div class="input-container" style="flex: 1;">
-                        <label>Altitud (m):</label>
-                        <input type="number" id="altitudFlora" step="1" placeholder="Ej. 1500">
+                        <label for="altitudFlora">Altitud (msnm):</label>
+                        <input type="number" id="altitudFlora" step="1" value="1200" placeholder="Ej. 1200">
                     </div>
                 </div>
             
-                <button class="btn" style="margin-top: 1rem;" onclick="solicitarPrediccionFlora()">Generar Predicción</button>
-                <p id="resultadoFlora" style="margin-top: 1rem; color: var(--color-orange); font-weight: 500;"></p>
+                <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                    <button class="btn active" id="btnEjecutarFlora" onclick="solicitarPrediccionFlora()">
+                        Consultar plantas
+                    </button>
+                    <span id="loaderFlora" style="display: none; font-size: 0.9rem; color: var(--text-main);">
+                        <span class="spinner"></span> Consultando catálogo...
+                    </span>
+                </div>
+                <p id="resultadoFlora" style="margin-top: 0.75rem; color: var(--color-orange); font-weight: 600;"></p>
             
-                <div id="grafFlora">
-                    <img id="graficaFlora" alt="Gráfica de predicción" style="display:none">
+                <!-- Resultados estructurados Flora -->
+                <div id="resBoxFlora" class="results-container">
+                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Especies compatibles encontradas</h3>
+                    <div id="tablaFloraContainer" class="flora-table-wrapper"></div>
+                </div>
+
+                <!-- Gráfica Flora -->
+                <div id="boxGrafFlora" class="chart-box" style="display: none;">
+                    <div class="chart-toolbar">
+                        <span><strong>Gráfica de dispersión:</strong> Posición de la consulta respecto a las especies</span>
+                        <a id="downloadFloraLink" href="#" download="grafica_plantas.png" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">Descargar imagen</a>
+                    </div>
+                    <img id="graficaFlora" alt="Gráfica de predicción de flora">
                 </div>
             </div>
 
-        </div>
+        </main>
     </div>
 
 <script>
+    const API_BASE = "http://localhost:8040";
+
+    const DESCRIPCIONES_POLINIZADORES = {
+        "Abejas": "Abejas nativas y de miel. Ayudan a que den fruto las hortalizas, frijoles y calabazas.",
+        "Colibríes": "Picaflores que visitan flores largas y coloridas, llevando polen de una planta a otra.",
+        "Mariposas": "Insectos de vuelo ágil que visitan muchas flores y ayudan a mezclar el polen en el campo.",
+        "Murciélagos": "Animales nocturnos muy importantes para polinizar magueyes y árboles en zonas secas."
+    };
+
+    // Verificación de conexión con el servidor ML
+    async function verificarServidorML() {
+        const dot = document.getElementById("statusDot");
+        const text = document.getElementById("statusText");
+
+        try {
+            const resp = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
+            if (resp.ok) {
+                dot.className = "status-indicator status-on";
+                text.innerText = "API conectada";
+                text.style.color = "var(--color-green)";
+            } else {
+                throw new Error("HTTP Status: " + resp.status);
+            }
+        } catch (e) {
+            dot.className = "status-indicator status-off";
+            text.innerText = "API desconectada";
+            text.style.color = "var(--color-red)";
+        }
+    }
+
+    // Presets
+    function aplicarPresetPol(temp, alt) {
+        document.getElementById("temperaturaPol").value = temp;
+        document.getElementById("altitudPol").value = alt;
+        solicitarPrediccionPolinizadores();
+    }
+
+    function aplicarPresetFlora(temp, hum, alt) {
+        document.getElementById("temperaturaFlora").value = temp;
+        document.getElementById("humedadFlora").value = hum;
+        document.getElementById("altitudFlora").value = alt;
+        solicitarPrediccionFlora();
+    }
+
+    // Predicción de Polinizadores
     async function solicitarPrediccionPolinizadores() {
         const temp = document.getElementById("temperaturaPol").value;
         const alt = document.getElementById("altitudPol").value;
         const resText = document.getElementById("resultadoPol");
+        const loader = document.getElementById("loaderPol");
+        const resBox = document.getElementById("resBoxPol");
+        const tarjetas = document.getElementById("tarjetasPol");
+        const boxGraf = document.getElementById("boxGrafPol");
+        const grafica = document.getElementById("graficaPol");
+        const dlLink = document.getElementById("downloadPolLink");
 
         if (!temp || !alt) {
-            resText.innerText = "Por favor, ingresa temperatura y altitud.";
+            resText.innerText = "Ingresa temperatura y altitud válidas.";
             return;
         }
 
-        resText.innerText = "Procesando...";
+        resText.innerText = "";
+        loader.style.display = "inline-block";
 
         try {
-            const respPlot = await fetch(`http://localhost:8040/polinizadores/?temperatura=${temp}&altitud=${alt}&grafica=true`);
-            const blob = await respPlot.blob();
-            const url = URL.createObjectURL(blob);
-            const grafica = document.getElementById("graficaPol");
-            grafica.src = url;
-            grafica.style.display = "block";
-            resText.innerText = "";
+            const resp = await fetch(`${API_BASE}/polinizadores/?temperatura=${temp}&altitud=${alt}&formato_completo=true`);
+            if (!resp.ok) throw new Error("Error en respuesta del servidor");
+
+            const data = await resp.json();
+            loader.style.display = "none";
+
+            // Renderizar gráfica
+            if (data.grafica_base64) {
+                grafica.src = data.grafica_base64;
+                dlLink.href = data.grafica_base64;
+                boxGraf.style.display = "block";
+            }
+
+            // Renderizar tarjetas de polinizadores
+            tarjetas.innerHTML = "";
+            const especies = data.polinizadores_predichos || [];
+            if (especies.length > 0) {
+                especies.forEach(esp => {
+                    const desc = DESCRIPCIONES_POLINIZADORES[esp] || "Grupo de polinizadores adaptado a este rango de temperatura y altitud.";
+                    const card = document.createElement("div");
+                    card.className = "pollinator-card";
+                    card.innerHTML = `
+                        <h4>${esp}</h4>
+                        <p>${desc}</p>
+                    `;
+                    tarjetas.appendChild(card);
+                });
+                resBox.style.display = "block";
+                resText.innerText = `Resultado: ${especies.length} grupo(s) compatible(s) identificado(s).`;
+                resText.style.color = "var(--color-green)";
+            } else {
+                resBox.style.display = "block";
+                tarjetas.innerHTML = `<p style="padding: 0.5rem; color: var(--color-orange);">No se registraron polinizadores típicos para estos valores en la base de datos.</p>`;
+                resText.innerText = "Condiciones fuera del rango habitual registrado.";
+                resText.style.color = "var(--color-orange)";
+            }
         } catch (error) {
-            console.error("Error al solicitar predicción:", error);
-            resText.innerText = "Error al conectarse al servidor.";
+            console.error("Error al consultar predicción:", error);
+            loader.style.display = "none";
+            resText.innerHTML = `No fue posible conectar con el servidor en <code>${API_BASE}</code>.<br><small>Verifica que el servicio esté ejecutándose con <code>bash run_agripoli.sh</code>.</small>`;
+            resText.style.color = "var(--color-red)";
         }
     }
 
+    // Consulta de Flora
     async function solicitarPrediccionFlora() {
         const temp = document.getElementById("temperaturaFlora").value;
         const hum = document.getElementById("humedadFlora").value;
         const alt = document.getElementById("altitudFlora").value;
         const resText = document.getElementById("resultadoFlora");
+        const loader = document.getElementById("loaderFlora");
+        const resBox = document.getElementById("resBoxFlora");
+        const tablaContainer = document.getElementById("tablaFloraContainer");
+        const boxGraf = document.getElementById("boxGrafFlora");
+        const grafica = document.getElementById("graficaFlora");
+        const dlLink = document.getElementById("downloadFloraLink");
 
-        if (!temp || !alt) {
-            resText.innerText = "Por favor, ingresa temperatura, humedad y altitud.";
+        if (!temp || !hum || !alt) {
+            resText.innerText = "Ingresa temperatura, humedad y altitud.";
             return;
         }
         
-        resText.innerText = "Procesando...";
+        resText.innerText = "";
+        loader.style.display = "inline-block";
 
         try {
-            const respPlot = await fetch(`http://localhost:8040/floraEndemica/?temperatura=${temp}&humedad=${hum}&altitud=${alt}&grafica=true`);
-            const blob = await respPlot.blob();
-            const url = URL.createObjectURL(blob);
-            const grafica = document.getElementById("graficaFlora");
-            grafica.src = url;
-            grafica.style.display = "block";
-            resText.innerText = "";
+            const resp = await fetch(`${API_BASE}/floraEndemica/?temperatura=${temp}&humedad=${hum}&altitud=${alt}&formato_completo=true`);
+            if (!resp.ok) throw new Error("Error en respuesta del servidor");
+
+            const data = await resp.json();
+            loader.style.display = "none";
+
+            // Renderizar gráfica
+            if (data.grafica_base64) {
+                grafica.src = data.grafica_base64;
+                dlLink.href = data.grafica_base64;
+                boxGraf.style.display = "block";
+            }
+
+            // Renderizar tabla de flora
+            const plantas = data.plantas_predichas || [];
+            if (plantas.length > 0) {
+                let html = `
+                    <table class="flora-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre Común</th>
+                                <th>Nombre Científico</th>
+                                <th>Familia</th>
+                                <th>Tipo</th>
+                                <th>Rango Altitud</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                plantas.forEach(p => {
+                    html += `
+                        <tr>
+                            <td><strong>${p.NombreComún}</strong></td>
+                            <td><em>${p.NombreCientifico || '-'}</em></td>
+                            <td>${p.Familia || '-'}</td>
+                            <td><span class="tag tag-highlight" style="font-size: 0.75rem;">${p.TipoFlora || 'Endémica'}</span></td>
+                            <td>${p.AltitudMin || 0} - ${p.AltitudMax || 0} m</td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+                tablaContainer.innerHTML = html;
+                resBox.style.display = "block";
+                resText.innerText = `Resultado: ${plantas.length} especie(s) compatible(s) encontrada(s).`;
+                resText.style.color = "var(--color-green)";
+            } else {
+                resBox.style.display = "block";
+                tablaContainer.innerHTML = `<p style="padding: 1rem; color: var(--color-orange);">No se encontraron especies en la tabla para estos valores con la tolerancia actual.</p>`;
+                resText.innerText = "Sin coincidencias en el catálogo para estos valores.";
+                resText.style.color = "var(--color-orange)";
+            }
         } catch (error) {
-            console.error("Error al solicitar predicción:", error);
-            resText.innerText = "Error al conectarse al servidor.";
+            console.error("Error al consultar flora:", error);
+            loader.style.display = "none";
+            resText.innerHTML = `Error al conectar con el servidor en <code>${API_BASE}</code>.<br><small>Verifica que el servicio esté ejecutándose en el puerto 8040.</small>`;
+            resText.style.color = "var(--color-red)";
         }
     }
 
+    // Cambio de pestañas
     function mostrarFlora() {
         document.getElementById("MFlora").style.display = "block";        
         document.getElementById("MPolinizadores").style.display = "none"; 
@@ -152,6 +522,8 @@
 
     window.onload = () => {
         mostrarPolinizadores();
+        verificarServidorML();
+        solicitarPrediccionPolinizadores();
     }
 </script>
 </body>

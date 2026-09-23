@@ -185,46 +185,129 @@ def generar_prompt_cultivo_terreno(
     delimitacion = props.get("delimitacion", "Recuadro de parcela rectangular delimitado por senderos rectos de tierra compactada")
     iluminacion = props.get("iluminacion", "Vista en ángulo de 45° con luz solar natural de mañana y sombras suaves")
 
-    # 1. Ensamblar Prompt en Español
-    prompt_es = (
-        f"Fotografía agronómica profesional hiperrealista en ángulo cenital y perspectiva de 45 grados de un "
-        f"recuadro de terreno agrícola rectangular bien delimitado en {region_nombre}. La parcela muestra una asociación "
-        f"de cultivos regenerativa en pleno desarrollo:\n"
-        f"Cultivo principal: {cultivo_prin}.\n"
-        f"Cultivo asociado complementario: {cultivo_asoc}.\n"
-        f"Cobertura vegetal del suelo: {cobertura}.\n"
-        f"Bordes y cabeceras de la parcela: {borde}.\n"
-        f"Patrón de siembra: {patron}.\n"
-        f"Textura y características del suelo: {suelo}.\n"
-        f"Manejo hídrico: {hidrico}.\n"
-        f"Delimitación del lote: {delimitacion}, marcando con precisión el perímetro cuadrado o rectangular del terreno.\n"
-        f"Iluminación y atmósfera: {iluminacion}. Texturas de hojas, tierra húmeda y frutos con nitidez extrema y profundidad de campo, "
-        f"sin elementos irrelevantes fuera del encuadre, lista como referencia de modelado 3D y concept art agronómico."
+    # 1. Prompt Principal: Vista Isométrica 3D a 45° (Bloque de Parcela Aislado PNG Cutout)
+    prompt_es_principal = (
+        f"Render 3D fotorrealista y fotografía agronómica de estudio en ángulo isométrico a 45 grados de un "
+        f"recuadro de terreno agrícola rectangular bien delimitado en {region_nombre}, presentado como un bloque o "
+        f"diorama flotante aislado estilo PNG sobre fondo blanco puro de estudio sin ningún fondo exterior. "
+        f"La parcela muestra un policultivo regenerativo en pleno desarrollo:\n"
+        f"• Cultivo principal: {cultivo_prin}.\n"
+        f"• Cultivo asociado complementario: {cultivo_asoc}.\n"
+        f"• Cobertura vegetal viva del suelo: {cobertura}.\n"
+        f"• Bordes perimetrales y cabeceras: {borde}.\n"
+        f"• Patrón de siembra y surcos: {patron}.\n"
+        f"• Textura y color del suelo: {suelo}.\n"
+        f"• Sistema de riego visible: {hidrico}.\n"
+        f"Separación espacial y segmentación 3D: Los surcos, las plantas individuales del cultivo principal, "
+        f"las matas asociadas, los frutos y las mangueras de riego presentan un espaciamiento limpio y una separación física "
+        f"moderada entre sí, con siluetas definidas y espacio libre negativo entre objetos para facilitar la segmentación "
+        f"automática y reconstrucción de mallas 3D independientes sin partes fusionadas.\n"
+        f"Los cuatro bordes laterales del recuadro ({delimitacion}) exhiben un corte recto y limpio de la tierra agrícola, "
+        f"delimitando con precisión milimétrica el bloque en el espacio 3D. Iluminación suave de estudio fotográfico con "
+        f"sombras de contacto limpias en la base, fondo blanco sólido uniforme sin horizonte, sin cielo ni paisaje exterior, "
+        f"máxima fidelidad botánica, edafológica y volumétrica para modelado 3D de fincas agrícolas."
     )
 
-    # 2. Ensamblar Prompt en Inglés (Optimizado para Midjourney v6 y Flux.1)
-    prompt_en = (
-        f"Hyperrealistic professional agronomic photograph from an elevated 45-degree angle showing a sharply defined "
-        f"rectangular agricultural plot in {region_nombre}. The delimited crop field displays a flourishing companion polyculture:\n"
-        f"Primary crop: {cultivo_prin}.\n"
-        f"Companion nitrogen-fixing crop: {cultivo_asoc}.\n"
-        f"Ground cover living mulch: {cobertura}.\n"
-        f"Border and perimeter buffers: {borde}.\n"
-        f"Planting pattern: {patron}.\n"
-        f"Soil properties: {suelo}.\n"
-        f"Water management: {hidrico}.\n"
-        f"Plot boundary: {delimitacion}, showing crisp clean earthen paths defining the plot edges.\n"
-        f"Lighting and mood: {iluminacion}. Extreme botanical fidelity, rich leaf veining, moist soil texture, sharp focus across the entire plot, "
-        f"photorealistic 8k, volumetric lighting, ready as a 3D terrain texture and architectural farm concept reference --ar 16:9 --v 6.1"
+    prompt_en_principal = (
+        f"Photorealistic 3D asset render and agronomic studio photograph at a 45-degree isometric angle of a sharply "
+        f"delimited rectangular agricultural plot in {region_nombre}, presented as a floating soil block diorama isolated "
+        f"on a solid pure white background, clean PNG cutout style. The parcel displays a flourishing companion polyculture: "
+        f"Primary crop: {cultivo_prin}. "
+        f"Companion nitrogen-fixing crop: {cultivo_asoc}. "
+        f"Living ground mulch: {cobertura}. "
+        f"Perimeter buffer rows: {borde}. "
+        f"Planting pattern: {patron}. "
+        f"Soil edaphic texture: {suelo}. "
+        f"Irrigation: {hidrico}. "
+        f"3D Object Separation & Mesh Isolation: Planting rows, individual crop stalks, companion legume bunches, "
+        f"fruit clusters, and irrigation lines are arranged with distinct spatial clearance and clean spacing between elements, "
+        f"featuring well-defined non-overlapping contours and clear negative space around each plant asset, specifically "
+        f"engineered for automated 3D mesh detection, clean instance segmentation, and neural 3D reconstruction without fused vertices. "
+        f"The 4 vertical edges of the rectangular plot ({delimitacion}) feature clean, straight soil cut cross-sections "
+        f"cleanly defining the parcel block in 3D space. Soft professional studio lighting with subtle contact shadows underneath, "
+        f"solid pure white background, no sky, no horizon, no outdoor scenery --no background, sky, mountains, landscape, trees outside plot --ar 1:1 --v 6.1 --style raw"
     )
+
+    # 2. Perspectiva 1: Vista Cenital / Top-Down (Planta Ortogonal a 90°)
+    perspectiva_cenital_es = (
+        f"Fotografía cenital ortogonal a 90 grados perpendicular directamente desde arriba de la parcela agrícola rectangular "
+        f"en {region_nombre}, aislada como recorte PNG sobre fondo blanco puro de estudio. Se aprecia con nitidez milimétrica "
+        f"el patrón geométrico de los surcos paralelos o curvas de nivel ({patron}), el espaciamiento regular y despejado del cultivo principal "
+        f"({cultivo_prin}) intercalado con {cultivo_asoc}, el tapiz verde de cobertura ({cobertura}) entre líneas y las líneas de riego ({hidrico}). "
+        f"Márgenes libres y separación clara entre hileras para escaneo topográfico y extracción de mallas 3D. "
+        f"Perímetro rectangular nítido ({delimitacion}) con cortes limpios sin fondo ambiental, iluminación cenital uniforme de estudio "
+        f"ideal para mapeo de texturas 2D/3D y diseño de plano agronómico."
+    )
+    perspectiva_cenital_en = (
+        f"Top-down orthographic 90-degree zenithal photograph directly from above of the rectangular agricultural plot in {region_nombre}, "
+        f"isolated as a clean PNG cutout asset on a solid pure white studio background. Geometric pattern of planting rows or contour furrows "
+        f"({patron}) clearly visible, with distinct spacing and spatial clearance between individual crop stalks ({cultivo_prin}) "
+        f"intercropped with {cultivo_asoc}, lush ground cover ({cobertura}), and irrigation drip lines ({hidrico}). "
+        f"Clean separation between furrow rows for accurate 3D mesh boundary isolation. Sharp rectangular perimeter boundary ({delimitacion}) "
+        f"with clean cut edges, flat even studio overhead lighting, no outdoor scenery --no background, sky, horizon --ar 1:1 --v 6.1 --style raw"
+    )
+
+    # 3. Perspectiva 2: Vista Frontal a Ras de Suelo / Entre Surcos (Ground-Level / Macro)
+    perspectiva_ras_suelo_es = (
+        f"Fotografía frontal a ras de suelo y nivel de ojo mirando por el pasillo interior entre dos surcos de cultivo en {region_nombre}, "
+        f"aislada sobre fondo blanco neutro de estudio estilo PNG sin paisaje exterior. Enfoque macro hiperdetallado en el primer plano: "
+        f"la textura húmeda y agregados del suelo fértil ({suelo}), las líneas de riego ({hidrico}), los brotes de {cobertura} cubriendo la tierra, "
+        f"y los tallos vigorosos de {cultivo_prin} entrelazados con {cultivo_asoc} con hojas y frutos detallados. "
+        f"Espacio libre en el callejón de surco con plantas despegadas entre sí para permitir detección de profundidad y mallas 3D nítidas. "
+        f"Profundidad de campo fotográfica profesional con sujeto nítido y recorte perfecto hacia un fondo de estudio blanco puro sin cielo ni horizonte."
+    )
+    perspectiva_ras_suelo_en = (
+        f"Eye-level frontal ground-level photograph looking down an interior furrow row of the agricultural plot in {region_nombre}, "
+        f"isolated against a solid pure white studio background, PNG cutout style with no outdoor scenery. Macro focus on the immediate foreground: "
+        f"rich moist soil crumb texture ({suelo}), precision irrigation drip lines ({hidrico}), ground mulch leaves ({cobertura}), and robust healthy "
+        f"stalks of {cultivo_prin} entwined with companion {cultivo_asoc}. Clear row furrow clearance with individual plant stalks cleanly separated "
+        f"for reliable depth-map estimation and independent 3D asset generation. Shallow depth of field with razor-sharp botanical textures, isolated against "
+        f"a pure white void, studio softbox lighting --no background, sky, horizon --ar 16:9 --v 6.1 --style raw"
+    )
+
+    # 4. Perspectiva 3: Vista Axonométrica 3/4 con Perfil de Estratos de Suelo (Cross-Section Soil Chunk)
+    perspectiva_corte_3d_es = (
+        f"Render 3D axonométrico en perspectiva 3/4 mostrando un bloque volumétrico de terreno agrícola en {region_nombre} con corte "
+        f"transversal vertical del suelo edafológico, aislado estilo PNG sobre fondo blanco puro. En la cara superior se aprecian los surcos "
+        f"con {cultivo_prin}, {cultivo_asoc}, {cobertura} y los bordes perimetrales de {borde} dispuestos con separación ordenada. "
+        f"En la cara frontal del corte vertical del bloque se observan los estratos subterráneos: la capa arable superior fértil ({suelo}), "
+        f"la zona radicular densa y los canales de infiltración hídrica. Espacio y siluetas optimizadas para exportación de modelos 3D "
+        f"a motores de videojuegos y software CAD sin vértices pegados. Acabado de diorama agronómico sin fondo ambiental, iluminación de estudio 3D de 3 puntos."
+    )
+    perspectiva_corte_3d_en = (
+        f"High-end 3/4 axometric 3D render of an agricultural soil block chunk in {region_nombre} with an edaphic cross-section cut, "
+        f"isolated PNG cutout asset on solid pure white background. The top surface displays flourishing crops: {cultivo_prin}, {cultivo_asoc}, "
+        f"{cobertura}, and border buffers ({borde}) arranged with clean individual spacing. The cut vertical side reveals the underground root zone profile: "
+        f"topsoil crumb layer ({suelo}), deep active root penetration, and moisture infiltration profile. Tailored for CAD and game engine 3D asset extraction "
+        f"with distinct non-overlapping mesh geometry. Clean architectural soil chunk asset, solid white background, 3-point studio lighting with soft contact ambient occlusion --no background, sky, landscape --ar 16:9 --v 6.1 --style raw"
+    )
+
+    perspectivas = {
+        "cenital_90deg": {
+            "nombre": "Vista Cenital / Top-Down (Planta Ortogonal 90° de la Parcela)",
+            "prompt_es": perspectiva_cenital_es,
+            "prompt_en": perspectiva_cenital_en,
+        },
+        "ras_suelo_macro": {
+            "nombre": "Vista Frontal a Ras de Suelo / Entre Surcos (Ground-Level)",
+            "prompt_es": perspectiva_ras_suelo_es,
+            "prompt_en": perspectiva_ras_suelo_en,
+        },
+        "corte_transversal_3d": {
+            "nombre": "Vista Axonométrica 3/4 con Perfil de Estratos de Suelo (Cross-Section Soil Chunk)",
+            "prompt_es": perspectiva_corte_3d_es,
+            "prompt_en": perspectiva_corte_3d_en,
+        },
+    }
 
     resultado = {
         "region": region,
         "estado": estado,
         "municipio": municipio,
         "propiedades_extraidas": props,
-        "prompt_espanol": prompt_es,
-        "prompt_ingles": prompt_en,
+        "prompt_espanol": prompt_es_principal,
+        "prompt_ingles": prompt_en_principal,
+        "perspectivas": perspectivas,
     }
 
     # Guardar en disco en la carpeta regional
@@ -238,14 +321,29 @@ def generar_prompt_cultivo_terreno(
 
             contenido_txt = (
                 f"========================================================================\n"
-                f"PROMPT PARA GENERACIÓN DE IMÁGENES — PARCELA Y RECUADRO DE CULTIVOS EN {region_nombre.upper()}\n"
+                f"PROMPTS DE IMAGEN: PARCELA Y RECUADRO DE CULTIVOS EN {region_nombre.upper()}\n"
                 f"Generado por: AgriPoli V3 (mini_prompt_cultivo)\n"
+                f"Formato: Bloque 3D / PNG Cutout Aislado en Fondo Blanco (Sin Fondo Exterior)\n"
                 f"========================================================================\n\n"
-                f"--- [OPCIÓN 1: PROMPT EN ESPAÑOL (DALL-E 3 / Bing Image Creator)] ---\n\n"
-                f"{prompt_es}\n\n"
                 f"------------------------------------------------------------------------\n"
-                f"--- [OPCIÓN 2: PROMPT EN INGLÉS (Midjourney v6 / Flux.1 / SDXL)] ---\n\n"
-                f"{prompt_en}\n\n"
+                f"1. PROMPT PRINCIPAL (Vista Isométrica 3D a 45° — Bloque Aislado PNG)\n"
+                f"------------------------------------------------------------------------\n\n"
+                f"[ESPAÑOL]\n{prompt_es_principal}\n\n"
+                f"[INGLÉS (Midjourney v6.1 / Flux.1)]\n{prompt_en_principal}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"2. PERSPECTIVAS Y AJUSTES DE CÁMARA JUGANDO CON LA MISMA ESCENA\n"
+                f"------------------------------------------------------------------------\n\n"
+                f"▶ PERSPECTIVA A: {perspectivas['cenital_90deg']['nombre']}\n"
+                f"[ESPAÑOL]\n{perspectiva_cenital_es}\n\n"
+                f"[INGLÉS]\n{perspectiva_cenital_en}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"▶ PERSPECTIVA B: {perspectivas['ras_suelo_macro']['nombre']}\n"
+                f"[ESPAÑOL]\n{perspectiva_ras_suelo_es}\n\n"
+                f"[INGLÉS]\n{perspectiva_ras_suelo_en}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"▶ PERSPECTIVA C: {perspectivas['corte_transversal_3d']['nombre']}\n"
+                f"[ESPAÑOL]\n{perspectiva_corte_3d_es}\n\n"
+                f"[INGLÉS]\n{perspectiva_corte_3d_en}\n\n"
                 f"========================================================================\n"
             )
 

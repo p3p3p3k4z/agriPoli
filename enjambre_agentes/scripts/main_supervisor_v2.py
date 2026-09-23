@@ -585,14 +585,19 @@ async def procesar_comando(linea: str, state: dict) -> bool:
             log_info(f"Invocando mini_prompt_isla para: '{region}'...", kaomoji="(^o^)/")
             res_isla = generar_prompt_isla_polinizadora(region)
             print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
-            print(f"{GREEN}{BOLD}[MINI_PROMPT_ISLA] PROMPT HIPERREALISTA DE ISLA POLINIZADORA{RESET}")
+            print(f"{GREEN}{BOLD}[MINI_PROMPT_ISLA] PROMPTS AISLADOS DE ISLA POLINIZADORA (PNG CUTOUT){RESET}")
             print(f"{YELLOW}Región:{RESET} {res_isla['region'].title()} | {YELLOW}Archivos:{RESET} {res_isla.get('archivo_txt', '')}")
             print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
-            print(f"{BOLD}--- PROMPT EN ESPAÑOL (DALL-E 3 / BING) ---{RESET}\n")
+            print(f"{BOLD}1. PROMPT PRINCIPAL (Vista Isométrica 3D a 45° — Aislado PNG sobre Blanco Puro):{RESET}\n")
             print(f"{res_isla['prompt_espanol']}\n")
-            print(f"{BOLD}--- PROMPT EN INGLÉS (MIDJOURNEY V6 / FLUX.1) ---{RESET}\n")
+            print(f"{BOLD}--- Versión en Inglés (Midjourney v6.1 / Flux.1): ---{RESET}\n")
             print(f"{DIM}{res_isla['prompt_ingles']}{RESET}\n")
-            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+            persp = res_isla.get("perspectivas", {})
+            if persp:
+                print(f"{BOLD}2. PERSPECTIVAS ADICIONALES GENERADAS (ver archivo .txt / .md):{RESET}")
+                for p_key, p_val in persp.items():
+                    print(f"   • {CYAN}{p_val.get('nombre', p_key)}{RESET}")
+            print(f"\n{CYAN}{BOLD}{'='*72}{RESET}\n")
 
     elif cmd in ("/prompt-cultivo", "/parcela", "/cultivo", "/terreno"):
         region = arg
@@ -606,14 +611,19 @@ async def procesar_comando(linea: str, state: dict) -> bool:
             log_info(f"Invocando mini_prompt_cultivo para: '{region}'...", kaomoji="(^o^)/")
             res_cultivo = generar_prompt_cultivo_terreno(region)
             print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
-            print(f"{GREEN}{BOLD}[MINI_PROMPT_CULTIVO] PROMPT DE PARCELA Y ASOCIACIÓN DE CULTIVOS{RESET}")
+            print(f"{GREEN}{BOLD}[MINI_PROMPT_CULTIVO] PROMPTS DE PARCELA AGRÍCOLA (BLOQUE AISLADO PNG){RESET}")
             print(f"{YELLOW}Región:{RESET} {res_cultivo['region'].title()} | {YELLOW}Archivos:{RESET} {res_cultivo.get('archivo_txt', '')}")
             print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
-            print(f"{BOLD}--- PROMPT EN ESPAÑOL (DALL-E 3 / BING) ---{RESET}\n")
+            print(f"{BOLD}1. PROMPT PRINCIPAL (Vista Isométrica 3D a 45° — Bloque de Cultivo Aislado PNG):{RESET}\n")
             print(f"{res_cultivo['prompt_espanol']}\n")
-            print(f"{BOLD}--- PROMPT EN INGLÉS (MIDJOURNEY V6 / FLUX.1) ---{RESET}\n")
+            print(f"{BOLD}--- Versión en Inglés (Midjourney v6.1 / Flux.1): ---{RESET}\n")
             print(f"{DIM}{res_cultivo['prompt_ingles']}{RESET}\n")
-            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+            persp = res_cultivo.get("perspectivas", {})
+            if persp:
+                print(f"{BOLD}2. PERSPECTIVAS ADICIONALES GENERADAS (ver archivo .txt / .md):{RESET}")
+                for p_key, p_val in persp.items():
+                    print(f"   • {CYAN}{p_val.get('nombre', p_key)}{RESET}")
+            print(f"\n{CYAN}{BOLD}{'='*72}{RESET}\n")
 
     elif cmd in ("/prompt-maestro", "/prompt-fusionado", "/fusionador", "/paisaje"):
         region = arg
@@ -627,14 +637,19 @@ async def procesar_comando(linea: str, state: dict) -> bool:
             log_info(f"Invocando fusionador_prompts para: '{region}'...", kaomoji="(^o^)/")
             res_maestro = fusionar_prompts_agroecologicos(region)
             print(f"\n{CYAN}{BOLD}{'='*72}{RESET}")
-            print(f"{GREEN}{BOLD}[FUSIONADOR_PROMPTS] PROMPT MAESTRO: ISLA POLINIZADORA + PARCELA{RESET}")
+            print(f"{GREEN}{BOLD}[FUSIONADOR_PROMPTS] PROMPTS MAESTROS: ISLA + PARCELA (DIORAMA AISLADO PNG){RESET}")
             print(f"{YELLOW}Región:{RESET} {res_maestro['region'].title()} | {YELLOW}Archivos:{RESET} {res_maestro.get('archivo_txt', '')}")
             print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
-            print(f"{BOLD}--- PROMPT EN ESPAÑOL EXTENSO (DALL-E 3 / BING / CONCEPT ART) ---{RESET}\n")
+            print(f"{BOLD}1. PROMPT PRINCIPAL (Gran Diorama Agroecológico 3D a 45° — Aislado PNG):{RESET}\n")
             print(f"{res_maestro['prompt_espanol_extenso']}\n")
-            print(f"{BOLD}--- PROMPT EN INGLÉS EXTENSO (MIDJOURNEY V6 / FLUX.1 / 3D SCENE) ---{RESET}\n")
+            print(f"{BOLD}--- Versión en Inglés Extenso (Midjourney v6.1 / Flux.1): ---{RESET}\n")
             print(f"{DIM}{res_maestro['prompt_ingles_extenso']}{RESET}\n")
-            print(f"{CYAN}{BOLD}{'='*72}{RESET}\n")
+            persp = res_maestro.get("perspectivas", {})
+            if persp:
+                print(f"{BOLD}2. PERSPECTIVAS ADICIONALES GENERADAS (ver archivo .txt / .md):{RESET}")
+                for p_key, p_val in persp.items():
+                    print(f"   • {CYAN}{p_val.get('nombre', p_key)}{RESET}")
+            print(f"\n{CYAN}{BOLD}{'='*72}{RESET}\n")
 
     elif cmd in ("/clear", "/reset"):
         state["chat_history"] = []

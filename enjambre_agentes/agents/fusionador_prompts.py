@@ -57,12 +57,18 @@ def fusionar_prompts_agroecologicos(
 
     prompt_fusion = f"""Eres el Diseñador Visual y Arquitecto Agroecológico Maestro de AgriPoli.
 Tu misión es escribir un PROMPT DE IMAGEN EXTENSO, COHESIVO E HIPERREALISTA donde convivan armónicamente:
-1. Una ISLA POLINIZADORA circular (santuario de biodiversidad).
-2. Un RECUADRO DE TERRENO AGRÍCOLA (parcela productiva delimitada).
+1. Una ISLA POLINIZADORA circular viva (santuario central de biodiversidad).
+2. Un RECUADRO DE TERRENO AGRÍCOLA delimitado (parcela productiva circundante).
+
+IMPORTANTE - FORMATO, AISLAMIENTO Y SEPARACIÓN PARA CONVERSIÓN A 3D:
+- El modelo debe presentarse como un gran DIORAMA AGROECOLÓGICO FLOTANTE o BLOQUE 3D recortado estilo PNG sobre fondo blanco puro de estudio.
+- NO DEBE CONTENER horizonte, cielo, montañas ni paisaje exterior. Solo el bloque de cultivo y la isla perfectamente recortados con bordes limpios en el espacio.
+- SEPARACIÓN ESPACIAL PARA CONVERSIÓN A 3D: Cada elemento (árboles del dosel, arbustos, flores, hotel de insectos, surcos de cultivo, plantas individuales y polinizadores en vuelo) debe mostrarse con una separación física moderada y siluetas independientes bien definidas, evitando amontonamientos o sobreposiciones confusas, de modo que los algoritmos de detección de objetos y mallas 3D (image-to-3D) puedan segmentar y reconstruir cada objeto por separado sin crear mallas fundidas.
+- Debe apreciarse la interacción viva y sinergia: abejas y polinizadores saliendo del corazón de la isla hacia las flores de los cultivos agrícolas, y fauna auxiliar patrullando los surcos.
 
 Región objetivo: "{region_nombre}".
 
---- DATOS DE LA ISLA POLINIZADORA ---
+--- DATOS DE LA ISLA POLINIZADORA CENTRAL ---
 - Dosel arbóreo: {props_isla.get('dosel', '')}
 - Sotobosque floral: {props_isla.get('sotobosque', '')}
 - Cobertura de suelo: {props_isla.get('cobertura', '')}
@@ -70,7 +76,7 @@ Región objetivo: "{region_nombre}".
 - Insectos benéficos auxiliares: {props_isla.get('insectos_auxiliares', '')}
 - Infraestructura ecológica: {props_isla.get('infraestructura', '')}
 
---- DATOS DE LA PARCELA AGRÍCOLA ---
+--- DATOS DE LA PARCELA AGRÍCOLA CIRCUNDANTE ---
 - Cultivo principal: {props_cultivo.get('cultivo_principal', '')}
 - Cultivo asociado complementario: {props_cultivo.get('cultivo_asociado', '')}
 - Cobertura vegetal viva: {props_cultivo.get('cobertura_suelo', '')}
@@ -80,19 +86,10 @@ Región objetivo: "{region_nombre}".
 - Manejo hídrico: {props_cultivo.get('manejo_hidrico', '')}
 - Delimitación perimetral: {props_cultivo.get('delimitacion', '')}
 
---- HORIZONTE Y LUZ ---
-{props_isla.get('horizonte', '')} | {props_cultivo.get('iluminacion', '')}
-
-INSTRUCCIONES DE DISEÑO VISUAL:
-- La composición debe mostrar un recuadro de parcela agrícola completo y bien delimitado, que alberga en su centro neurálgico la Isla Polinizadora circular viva.
-- Debe apreciarse la interacción viva y sinergia: las abejas y polinizadores saliendo de la isla hacia las flores de los cultivos agrícolas circundantes, y las mariquitas/crisopas patrullando los surcos.
-- Los surcos y camas de cultivo rodean orgánicamente la isla polinizadora, interconectados por senderos limpios de tierra compactada.
-- Debe redactarse de forma descriptiva, hiperrealista, fotográfica, sin elementos fantásticos ni texto flotante.
-
 Debes responder ÚNICAMENTE con un objeto JSON con dos claves:
 {{
-  "prompt_espanol_extenso": "Texto del prompt completo en español, muy detallado y estructurado por párrafos o secciones temáticas, listo para DALL-E 3 o concept art.",
-  "prompt_ingles_extenso": "Texto del prompt completo en inglés optimizado con descriptores fotográficos cinematográficos, relación de aspecto --ar 16:9 --v 6.1 listo para Midjourney v6 o Flux.1."
+  "prompt_espanol_extenso": "Texto del prompt principal en español, extenso, describiendo el diorama completo aislado en fondo blanco de estudio sin horizonte, con elementos ligeramente separados para segmentación 3D precisa, listo para DALL-E 3.",
+  "prompt_ingles_extenso": "Texto del prompt principal en inglés con descriptores de 3D diorama asset render, isolated on pure white background, PNG cutout style, distinct spatial separation between assets for image-to-3D mesh reconstruction, --no background, sky, mountains --ar 16:9 --v 6.1 --style raw"
 }}
 """
     prompt_es_extenso = ""
@@ -134,45 +131,115 @@ Debes responder ÚNICAMENTE con un objeto JSON con dos claves:
         log_ok("Prompt maestro agroecológico fusionado exitosamente con LLM.", kaomoji="(^w^)")
     except Exception as e:
         log_error(f"Fallback de ensamblado directo para prompt maestro: {e}", kaomoji="[~_~]")
-        # Ensamblado determinista si el LLM falla
+
+    # Asegurar prompts principales robustos si el LLM no respondió completo
+    if not prompt_es_extenso or len(prompt_es_extenso) < 100:
         prompt_es_extenso = (
-            f"Fotografía panorámica aérea y perspectiva en ángulo de 45 grados de un paisaje agroecológico de precisión "
-            f"en {region_nombre}. En el centro de un recuadro de terreno agrícola perfectamente delimitado, se ubica una "
-            f"vibrante Isla Polinizadora circular de conservación biológica, rodeada armónicamente por cuatro sectores de cultivo.\n\n"
-            f"1. NÚCLEO ECOLÓGICO (Isla Polinizadora Circular):\n"
-            f"La isla circular destaca con su estratificación vegetal completa: un dosel de árboles medianos ({props_isla.get('dosel', '')}), "
-            f"un denso sotobosque floral ({props_isla.get('sotobosque', '')}) y una alfombra vegetal de cobertura ({props_isla.get('cobertura', '')}). "
-            f"En su interior se aprecia infraestructura ecológica integrada: {props_isla.get('infraestructura', '')}.\n\n"
-            f"2. PARCELA AGRÍCOLA CIRCUNDANTE (Recuadro Productivo):\n"
-            f"Rodeando el santuario circular se despliegan cuatro parcelas cultivadas en surcos limpios ({props_cultivo.get('patron_siembra', '')}) "
-            f"con {props_cultivo.get('cultivo_principal', '')} asociado con {props_cultivo.get('cultivo_asociado', '')} y cobertura viva de {props_cultivo.get('cobertura_suelo', '')}. "
-            f"En las orillas y cabeceras del terreno destacan barreras perimetrales de {props_cultivo.get('cultivo_borde', '')}.\n\n"
-            f"3. SINERGIA BIOLÓGICA Y EDÁFICA EN ACCIÓN:\n"
-            f"Se observan en pleno vuelo y pecoreo {props_isla.get('polinizadores', '')}, transitando activamente entre el corazón de la isla "
-            f"y las flores abiertas de los cultivos agrícolas. En las hojas de los surcos se aprecian {props_isla.get('insectos_auxiliares', '')} "
-            f"actuando como control biológico natural. El suelo muestra su textura y color característico ({props_cultivo.get('suelo_textura', '')}) "
-            f"con {props_cultivo.get('manejo_hidrico', '')}.\n\n"
-            f"4. DELIMITACIÓN Y HORIZONTE:\n"
-            f"{props_cultivo.get('delimitacion', '')}. Al fondo se contempla {props_isla.get('horizonte', '')}, bañado por {props_cultivo.get('iluminacion', '')}. "
-            f"Fotografía agronómica profesional hiperrealista de alta resolución, nitidez botánica absoluta, sin elementos fantásticos, "
-            f"lista como referencia integral para modelado 3D de fincas regenerativas."
+            f"Render 3D fotorrealista y fotografía de estudio en ángulo isométrico a 45 grados de un gran diorama agroecológico "
+            f"flotante en {region_nombre}, presentado como un bloque de terreno agrícola rectangular aislado estilo PNG sobre "
+            f"fondo blanco puro de estudio sin ningún fondo exterior. En el centro exacto del bloque se sitúa una vibrante "
+            f"Isla Polinizadora circular viva: dosel de {props_isla.get('dosel', '')}, sotobosque floral de {props_isla.get('sotobosque', '')}, "
+            f"tapete de cobertura de {props_isla.get('cobertura', '')} e infraestructura ecológica ({props_isla.get('infraestructura', '')}). "
+            f"Rodeando armoniosamente la isla circular se extienden las parcelas agrícolas cultivadas en {props_cultivo.get('patron_siembra', '')} "
+            f"con {props_cultivo.get('cultivo_principal', '')} asociado con {props_cultivo.get('cultivo_asociado', '')}, cobertura viva de {props_cultivo.get('cobertura_suelo', '')}, "
+            f"y bordes perimetrales de {props_cultivo.get('cultivo_borde', '')}.\n"
+            f"Separación espacial y segmentación 3D: Los componentes del santuario (árboles, arbustos, flores, bebedero) y los cultivos "
+            f"circundantes están distribuidos con una separación física moderada y márgenes limpios entre sí, con siluetas despegadas "
+            f"y contornos individuales definidos sin apiñamientos densos, permitiendo que los algoritmos de escaneo e image-to-3D detecten y generen mallas 3D separadas de cada objeto con total nitidez.\n"
+            f"Se observa una intensa sinergia biológica en pleno vuelo: {props_isla.get('polinizadores', '')} transitando con trayectorias despejadas desde el santuario hacia las flores de los cultivos, y "
+            f"{props_isla.get('insectos_auxiliares', '')} patrullando el follaje. Textura edafológica fértil ({props_cultivo.get('suelo_textura', '')}) "
+            f"con {props_cultivo.get('manejo_hidrico', '')}. Bordes laterales rectos ({props_cultivo.get('delimitacion', '')}) cortados con precisión limpia. "
+            f"Iluminación suave de estudio fotográfico con sombra de contacto inferior, fondo blanco puro sólido sin cielo, sin horizonte ni paisaje exterior."
         )
 
+    if not prompt_en_extenso or len(prompt_en_extenso) < 100:
         prompt_en_extenso = (
-            f"Hyperrealistic wide-angle elevated 45-degree aerial photograph of a holistic regenerative agroecological farm "
-            f"in {region_nombre}. At the core of a sharply defined rectangular crop plot rests a vibrant circular Pollinator Island "
-            f"surrounded by organized agricultural sectors in active symbiosis.\n\n"
-            f"The circular pollinator sanctuary features a rich multi-layered native canopy ({props_isla.get('dosel', '')}), "
-            f"understory shrubs ({props_isla.get('sotobosque', '')}), and flowering ground cover ({props_isla.get('cobertura', '')}), "
-            f"equipped with {props_isla.get('infraestructura', '')}.\n\n"
-            f"Flanking the sanctuary are the four agricultural companion quadrants with {props_cultivo.get('cultivo_principal', '')} "
-            f"intercropped with {props_cultivo.get('cultivo_asociado', '')} along {props_cultivo.get('patron_siembra', '')} "
-            f"on {props_cultivo.get('suelo_textura', '')} with {props_cultivo.get('manejo_hidrico', '')}.\n\n"
-            f"Visible ecological synergy: {props_isla.get('polinizadores', '')} flying between the wild sanctuary and the blooming crop furrows, "
-            f"with beneficial insects ({props_isla.get('insectos_auxiliares', '')}) patrolling leaves. Clean earthen border paths "
-            f"({props_cultivo.get('delimitacion', '')}). Background landscape: {props_isla.get('horizonte', '')} under natural daylight, "
-            f"sharp depth of field, 8k resolution, cinematic lighting, ready as a 3D terrain and farm simulation concept --ar 16:9 --v 6.1"
+            f"Photorealistic 3D asset render and studio photograph at a 45-degree isometric angle of a holistic agroecological "
+            f"floating diorama in {region_nombre}, presented as an isolated rectangular agricultural plot block on a solid pure "
+            f"white background, clean PNG cutout style. At the core of the block sits a thriving circular Pollinator Island sanctuary: "
+            f"native canopy of {props_isla.get('dosel', '')}, flowering understory of {props_isla.get('sotobosque', '')}, ground cover of "
+            f"{props_isla.get('cobertura', '')}, and {props_isla.get('infraestructura', '')}. Encircling the circular island organically "
+            f"are the agricultural crop rows ({props_cultivo.get('patron_siembra', '')}) featuring {props_cultivo.get('cultivo_principal', '')} "
+            f"intercropped with {props_cultivo.get('cultivo_asociado', '')}, living soil cover ({props_cultivo.get('cobertura_suelo', '')}), "
+            f"and perimeter buffer edges ({props_cultivo.get('cultivo_borde', '')}).\n"
+            f"3D Object Separation & Mesh Isolation: Individual sanctuary trees, flowering shrubs, crop stalks, companion legumes, "
+            f"ecological infrastructure, and hovering pollinators are arranged with distinct spatial clearance and clean spacing between assets, "
+            f"exhibiting crisp non-overlapping contours and clear negative space specifically engineered for automated multi-object 3D mesh detection and neural reconstruction without fused meshes.\n"
+            f"Active biological symbiosis in flight: {props_isla.get('polinizadores', '')} foraging along clear flight paths between island blossoms and companion crop flowers, while {props_isla.get('insectos_auxiliares', '')} patrol stems. "
+            f"Rich edaphic soil texture ({props_cultivo.get('suelo_textura', '')}) with irrigation ({props_cultivo.get('manejo_hidrico', '')}). "
+            f"Crisp straight boundary edges ({props_cultivo.get('delimitacion', '')}) cleanly cut in 3D space. Soft studio lighting casting subtle "
+            f"contact shadows underneath, solid pure white background void, no background scenery, no sky, no horizon --no background, sky, mountains, landscape --ar 16:9 --v 6.1 --style raw"
         )
+
+    # 3 Perspectivas de Ajuste del Prompt Maestro
+    # A. Cenital 90° Top-Down
+    persp_cenital_es = (
+        f"Fotografía cenital ortogonal a 90 grados perpendicular directa desde arriba del diorama agroecológico maestro de {region_nombre}, "
+        f"aislado estilo PNG sobre fondo blanco puro de estudio. Se aprecia con precisión de plano arquitectónico la relación concéntrica y el espaciado ordenado: "
+        f"en el centro la Isla Polinizadora circular ({props_isla.get('dosel', '')}, {props_isla.get('sotobosque', '')}, {props_isla.get('cobertura', '')}), "
+        f"rodeada por los cuadrantes de cultivo en surcos ({props_cultivo.get('cultivo_principal', '')} y {props_cultivo.get('cultivo_asociado', '')}) con pasillos libres entre hileras, "
+        f"y los senderos perimetrales limpios ({props_cultivo.get('delimitacion', '')}). Márgenes nítidos entre objetos para segmentación cartográfica 3D. "
+        f"Fondo blanco sólido sin paisaje ambiental, iluminación cenital uniforme."
+    )
+    persp_cenital_en = (
+        f"Top-down orthographic 90-degree zenithal photograph directly from above of the master agroecological diorama in {region_nombre}, "
+        f"isolated as a clean PNG cutout asset on a solid pure white studio background. Architectural layout clearly showing the concentric circular "
+        f"pollinator sanctuary at the core surrounded by symmetrical crop quadrants ({props_cultivo.get('cultivo_principal', '')} and {props_cultivo.get('cultivo_asociado', '')}) "
+        f"with distinct spatial clearance between rows and plant clusters, and crisp perimeter paths ({props_cultivo.get('delimitacion', '')}). "
+        f"Clean negative space tailored for 3D layout segmentation. Completely isolated on solid white void, flat even overhead lighting, no outdoor scenery --no background, sky, horizon --ar 1:1 --v 6.1 --style raw"
+    )
+
+    # B. Ras de Suelo / Transición Ecológica en Acción
+    persp_suelo_es = (
+        f"Fotografía frontal a ras de suelo y nivel de ojo capturando la zona de transición donde termina el borde de la Isla Polinizadora "
+        f"circular y comienzan los surcos de cultivo en {region_nombre}, aislada sobre fondo blanco de estudio estilo PNG sin paisaje exterior. "
+        f"En primer plano hipernítido se observan abejas y colibríes ({props_isla.get('polinizadores', '')}) cruzando en vuelo directo entre "
+        f"las flores de la isla ({props_isla.get('cobertura', '')}) y las flores de {props_cultivo.get('cultivo_principal', '')}, con siluetas despegadas "
+        f"y espacio libre entre tallos para permitir la detección precisa de profundidad e individualización de mallas 3D. "
+        f"Textura de tierra húmeda y mantillo orgánico en la base, iluminación de estudio suave con recorte perfecto hacia fondo blanco."
+    )
+    persp_suelo_en = (
+        f"Eye-level frontal ground-level photograph capturing the ecological transition threshold between the circular Pollinator Island edge "
+        f"and the agricultural crop rows in {region_nombre}, isolated against a solid pure white studio background, clean PNG cutout style with no outdoor scenery. "
+        f"Foreground focus captures native pollinators ({props_isla.get('polinizadores', '')}) in active flight transitioning between island blossoms "
+        f"and companion crop flowers ({props_cultivo.get('cultivo_principal', '')}), showing clean clearance and non-overlapping silhouettes between stems for reliable 3D depth-mesh extraction. "
+        f"Crisp botanical textures, shallow depth of field isolated against white void, soft studio lighting --no background, sky, horizon --ar 16:9 --v 6.1 --style raw"
+    )
+
+    # C. Axonométrica 3/4 en Corte Transversal de Terreno
+    persp_corte_es = (
+        f"Render 3D axonométrico en perspectiva 3/4 de un gran bloque de terreno agroecológico en {region_nombre} con corte transversal vertical "
+        f"del suelo, aislado estilo PNG sobre fondo blanco puro. En la superficie se visualiza la integración de la Isla Polinizadora circular dentro "
+        f"de los surcos de cultivo ({props_cultivo.get('cultivo_principal', '')} y {props_cultivo.get('cultivo_asociado', '')}) con elementos botánicos separados y definidos individualmente. "
+        f"En las caras laterales cortadas del bloque se aprecian los estratos del perfil del suelo edafológico ({props_cultivo.get('suelo_textura', '')}), raíces profundas y líneas de infiltración hídrica. "
+        f"Optimizado para software CAD y motores 3D sin mallas pegadas, sin fondo ambiental, iluminación de estudio 3D de 3 puntos."
+    )
+    persp_corte_en = (
+        f"High-end 3/4 axometric 3D cross-section render of an integrated agroecological farm block in {region_nombre}, isolated PNG cutout asset on "
+        f"solid pure white background. The top surface displays the circular Pollinator Island integrated into the surrounding crop rows "
+        f"({props_cultivo.get('cultivo_principal', '')} and {props_cultivo.get('cultivo_asociado', '')}) with distinctly separated botanical assets. "
+        f"The cut vertical faces reveal the subterranean soil profile ({props_cultivo.get('suelo_textura', '')}), deep root development, and water infiltration pathways. "
+        f"Geometrically optimized for CAD/game-engine 3D mesh reconstruction with non-overlapping boundaries. Clean architectural farm block diorama, "
+        f"3-point studio lighting with soft contact ambient occlusion, no background scenery --no background, sky, mountains --ar 16:9 --v 6.1 --style raw"
+    )
+
+    perspectivas_maestro = {
+        "cenital_90deg": {
+            "nombre": "Vista Cenital / Top-Down (Plano Maestro Ortogonal 90°)",
+            "prompt_es": persp_cenital_es,
+            "prompt_en": persp_cenital_en,
+        },
+        "ras_suelo_transicion": {
+            "nombre": "Vista Frontal a Ras de Suelo / Transición Ecológica en Acción",
+            "prompt_es": persp_suelo_es,
+            "prompt_en": persp_suelo_en,
+        },
+        "corte_transversal_3d": {
+            "nombre": "Vista Axonométrica 3/4 en Corte Transversal de Terreno (Cross-Section Diorama)",
+            "prompt_es": persp_corte_es,
+            "prompt_en": persp_corte_en,
+        },
+    }
 
     resultado = {
         "region": region,
@@ -180,6 +247,7 @@ Debes responder ÚNICAMENTE con un objeto JSON con dos claves:
         "municipio": municipio,
         "prompt_espanol_extenso": prompt_es_extenso,
         "prompt_ingles_extenso": prompt_en_extenso,
+        "perspectivas": perspectivas_maestro,
         "componentes_isla": props_isla,
         "componentes_cultivo": props_cultivo,
     }
@@ -195,15 +263,30 @@ Debes responder ÚNICAMENTE con un objeto JSON con dos claves:
 
             contenido_txt = (
                 f"========================================================================\n"
-                f"PROMPT MAESTRO AGROECOLÓGICO: ISLA POLINIZADORA + PARCELA DE CULTIVOS\n"
-                f"Región: {region_nombre.upper()}\n"
-                f"Generado por: AgriPoli V3 (Agente Fusionador de Prompts)\n"
+                f"PROMPTS DE IMAGEN: ESCENA MAESTRA AGROECOLÓGICA EN {region_nombre.upper()}\n"
+                f"Isla Polinizadora Circular + Parcela Agrícola en Convivencia Viva\n"
+                f"Generado por: AgriPoli V3 (fusionador_prompts)\n"
+                f"Formato: Gran Diorama 3D / PNG Cutout Aislado en Fondo Blanco (Sin Fondo Exterior)\n"
                 f"========================================================================\n\n"
-                f"--- [OPCIÓN 1: PROMPT EN ESPAÑOL EXTENSO (DALL-E 3 / BING / CONCEPT ART)] ---\n\n"
-                f"{prompt_es_extenso}\n\n"
                 f"------------------------------------------------------------------------\n"
-                f"--- [OPCIÓN 2: PROMPT EN INGLÉS EXTENSO (MIDJOURNEY V6 / FLUX.1 / 3D RENDER)] ---\n\n"
-                f"{prompt_en_extenso}\n\n"
+                f"1. PROMPT PRINCIPAL (Gran Diorama Agroecológico 3D a 45° — Aislado PNG)\n"
+                f"------------------------------------------------------------------------\n\n"
+                f"[ESPAÑOL EXTENSO]\n{prompt_es_extenso}\n\n"
+                f"[INGLÉS EXTENSO (Midjourney v6.1 / Flux.1)]\n{prompt_en_extenso}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"2. PERSPECTIVAS Y AJUSTES DE CÁMARA JUGANDO CON LA MISMA ESCENA\n"
+                f"------------------------------------------------------------------------\n\n"
+                f"▶ PERSPECTIVA A: {perspectivas_maestro['cenital_90deg']['nombre']}\n"
+                f"[ESPAÑOL]\n{persp_cenital_es}\n\n"
+                f"[INGLÉS]\n{persp_cenital_en}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"▶ PERSPECTIVA B: {perspectivas_maestro['ras_suelo_transicion']['nombre']}\n"
+                f"[ESPAÑOL]\n{persp_suelo_es}\n\n"
+                f"[INGLÉS]\n{persp_suelo_en}\n\n"
+                f"------------------------------------------------------------------------\n"
+                f"▶ PERSPECTIVA C: {perspectivas_maestro['corte_transversal_3d']['nombre']}\n"
+                f"[ESPAÑOL]\n{persp_corte_es}\n\n"
+                f"[INGLÉS]\n{persp_corte_en}\n\n"
                 f"========================================================================\n"
             )
 
@@ -223,7 +306,7 @@ Debes responder ÚNICAMENTE con un objeto JSON con dos claves:
             resultado["archivo_txt"] = str(archivo_txt_desc.relative_to(project_root))
             resultado["archivo_json"] = str(archivo_json_desc.relative_to(project_root))
         except Exception as e:
-            log_error(f"Error guardando prompt maestro: {e}", kaomoji="[X_X]")
+            log_error(f"Error guardando prompt maestro fusionado: {e}", kaomoji="[X_X]")
 
     return resultado
 

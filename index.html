@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPoli | Plataforma de Biodiversidad y Agricultura</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>AgriPoli | Plataforma Central</title>
+    <link rel="stylesheet" href="frontend/css/style.css">
     <style>
         .portal-grid {
             display: grid;
@@ -84,7 +84,7 @@
         <div class="panel" style="grid-column: span 12; background-color: var(--bg-panel-alt); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 0.85rem 1.25rem;">
             <div>
                 <strong>Estado del sistema:</strong> 
-                <span style="color: var(--text-muted); font-size: 0.9rem;">Visor 3D disponible para Oaxaca, Chiapas y Guerrero • Modelos de predicción listos</span>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Modelos 3D (Oaxaca, Chiapas, Guerrero) y API de predicción disponibles</span>
             </div>
             <div id="mlStatusPill" style="font-family: 'Roboto Mono', monospace; font-size: 0.8rem; padding: 0.3rem 0.6rem; border: 1px solid var(--border-strong); background-color: var(--bg-main);">
                 Verificando API...
@@ -99,7 +99,7 @@
                     Consulta los cultivos de la zona, polinizadores, flores, árboles de sombra e insectos benéficos para Oaxaca, Chiapas y Guerrero, junto con su modelo 3D interactivo.
                 </p>
             </div>
-            <a href="dashboard.html" class="btn active" style="align-self: flex-start;">
+            <a href="frontend/dashboard.html" class="btn active" style="align-self: flex-start;">
                 Abrir Dashboard →
             </a>
         </div>
@@ -112,12 +112,20 @@
                     Ingresa la temperatura, altura y humedad de tu terreno para saber qué polinizadores y plantas se adaptan mejor a tu zona, usando datos agrícolas de México.
                 </p>
             </div>
-            <a href="maching_learning.html" class="btn active" style="align-self: flex-start;">
+            <a href="frontend/maching_learning.html" class="btn active" style="align-self: flex-start;">
                 Abrir consulta por clima →
             </a>
         </div>
 
-        <!-- Pie de página -->
+        <!-- Panel de Inicio Rápido -->
+        <div class="panel" style="grid-column: span 12; background-color: var(--bg-main); border: 2px dashed var(--border-strong);">
+            <h3 style="font-size: 1.05rem; margin-bottom: 0.4rem;">Inicio de servicios</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+                Para iniciar el servidor de cálculo y la página web con un solo comando, ejecuta en tu terminal:
+            </p>
+            <pre style="background-color: var(--bg-panel); padding: 0.75rem 1rem; border: 1px solid var(--border-strong); font-family: 'Roboto Mono', monospace; font-size: 0.9rem; overflow-x: auto;">bash run_agripoli.sh</pre>
+        </div>
+
         <footer class="panel" style="grid-column: span 12; text-align: center; padding: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
             AgriPoli • Interfaz en paleta Gruvbox
         </footer>

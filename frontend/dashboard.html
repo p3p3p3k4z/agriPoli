@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPoli | Dashboard Ecosistémico - Oaxaca</title>
+    <title>AgriPoli | Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </head>
@@ -11,104 +11,104 @@
     
     <div class="bento-grid">
         
-        <!-- Cabecera Principal / Mosaico Superior -->
+        <!-- Cabecera Principal -->
         <header class="panel tile-header">
             <div>
-                <h1>AgriPoli | Dashboard Ecosistémico</h1>
-                <p>Sistema Interactivo Inteligente para el Manejo Agrícola Regenerativo y Preservación de Polinizadores • <strong>Región Oaxaca</strong></p>
+                <h1>AgriPoli | Dashboard</h1>
+                <p id="dashboardSubtitle">Cultivos, polinizadores, plantas y modelo 3D • <strong id="headerRegionLabel">Oaxaca</strong></p>
             </div>
             <div class="tile-header-actions">
-                <span class="pill pill-yellow" style="font-size: 0.9rem; padding: 0.4rem 0.8rem; font-weight: 600;">OAXACA ACTIVO</span>
-                <!-- 
-                =======================================================
-                REGIONES CHIAPAS Y GUERRERO DESACTIVADAS POR EL USUARIO
-                <button class="region-btn" data-state="Chiapas">Chiapas</button>
-                <button class="region-btn" data-state="Guerrero">Guerrero</button>
-                =======================================================
-                -->
-                <a href="maching_learning.html" class="btn">Módulo ML →</a>
-                <a href="inicio.html" class="btn">← Volver al Inicio</a>
+                <div class="region-btn-group" id="regionSelector">
+                    <button class="region-btn active" data-region="Oaxaca">Oaxaca</button>
+                    <button class="region-btn" data-region="Chiapas">Chiapas</button>
+                    <button class="region-btn" data-region="Guerrero">Guerrero</button>
+                </div>
+                <a href="maching_learning.html" class="btn">Buscar por clima →</a>
+                <a href="inicio.html" class="btn">← Inicio</a>
             </div>
         </header>
 
-        <!-- Mosaico 1: Render 3D Compacto -->
+        <!-- Bloque 1: Modelo 3D -->
         <div class="panel tile-viewer">
             <div class="mosaic-title">
-                <span class="pill pill-green">VISOR 3D</span>
-                <h3>Isla Polinizadora</h3>
+                <h3 id="viewerTitle">Modelo 3D de la isla (Oaxaca)</h3>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">
-                Estructura de la isla en 3D interactivo. Usa el ratón o dedos para orbitar y rotar el modelo.
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                Arrastra el ratón o desliza con el dedo para girar y ver la distribución de plantas y árboles.
             </p>
-            <div class="compact-viewer-container">
+            <div class="compact-viewer-container" id="viewerWrapper">
                 <model-viewer id="island-viewer" 
                     src="modelos/isla_oaxaca.glb" 
-                    alt="Modelo 3D de la Isla Polinizadora de Oaxaca"
+                    alt="Modelo 3D de la isla"
                     auto-rotate 
                     camera-controls
-                    shadow-intensity="1"
+                    touch-action="pan-y"
+                    shadow-intensity="1.2"
                     environment-image="neutral"
-                    exposure="1.4">
+                    exposure="1.4"
+                    interaction-prompt="auto"
+                    loading="eager">
+                    <div class="progress-bar-slot" slot="progress-bar">
+                        <div class="progress-bar-fill" id="modelProgressFill"></div>
+                    </div>
                 </model-viewer>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-                <span class="tag" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">360° Rotación</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">isla_oaxaca.glb</span>
+            <div class="viewer-controls-bar">
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                    <button type="button" class="ctrl-btn" id="btnToggleRotate">Pausar giro</button>
+                    <button type="button" class="ctrl-btn" id="btnResetCamera">Centrar vista</button>
+                    <button type="button" class="ctrl-btn" id="btnFullscreen3D">Pantalla completa</button>
+                </div>
+                <span class="tag" id="modelFilenameTag" style="font-size: 0.75rem;">isla_oaxaca.glb</span>
             </div>
         </div>
 
-        <!-- Mosaico 2: Agroecosistema y Cultivos -->
+        <!-- Bloque 2: Cultivos -->
         <div class="panel tile-cultivos" id="mosaic-cultivos">
             <div class="mosaic-title">
-                <span class="pill pill-yellow">AGROECOSISTEMA</span>
-                <h3>Cultivos & Contexto</h3>
+                <h3>Cultivos de la zona</h3>
             </div>
-            <p>Cargando información agronómica de Oaxaca...</p>
+            <p>Cargando información de Oaxaca...</p>
         </div>
 
-        <!-- Mosaico 3: Polinizadores Clave -->
+        <!-- Bloque 3: Polinizadores -->
         <div class="panel tile-polinizadores" id="mosaic-polinizadores">
             <div class="mosaic-title">
-                <span class="pill pill-orange">ENTOMOLOGÍA</span>
-                <h3>Polinizadores Clave</h3>
+                <h3>Polinizadores</h3>
             </div>
-            <p>Cargando polinizadores benéficos...</p>
+            <p>Cargando información...</p>
         </div>
 
-        <!-- Mosaico 4: Flores y Estrato Herbáceo / Sotobosque -->
+        <!-- Bloque 4: Flores y plantas bajas -->
         <div class="panel tile-flores" id="mosaic-flores">
             <div class="mosaic-title">
-                <span class="pill pill-yellow">ESTRATO HERBÁCEO</span>
-                <h3>Flores & Néctar</h3>
+                <h3>Flores y plantas bajas</h3>
             </div>
-            <p>Cargando catálogo floral...</p>
+            <p>Cargando plantas...</p>
         </div>
 
-        <!-- Mosaico 5: Dosel Arbóreo / Árboles Protectores -->
+        <!-- Bloque 5: Árboles de sombra -->
         <div class="panel tile-arboles" id="mosaic-arboles">
             <div class="mosaic-title">
-                <span class="pill pill-green">ESTRATO ARBÓREO</span>
-                <h3>Dosel & Árboles</h3>
+                <h3>Árboles de sombra</h3>
             </div>
-            <p>Cargando especies arbóreas...</p>
+            <p>Cargando árboles...</p>
         </div>
 
-        <!-- Mosaico 6: Insectos Auxiliares & Control Biológico -->
+        <!-- Bloque 6: Insectos que ayudan contra plagas -->
         <div class="panel tile-auxiliares" id="mosaic-auxiliares">
             <div class="mosaic-title">
-                <span class="pill pill-purple">CONTROL BIOLÓGICO</span>
-                <h3>Insectos Auxiliares</h3>
+                <h3>Insectos que ayudan contra plagas</h3>
             </div>
-            <p>Cargando fauna depredadora benéfica...</p>
+            <p>Cargando insectos benéficos...</p>
         </div>
 
-        <!-- Mosaico 7: Infraestructura Ecológica -->
+        <!-- Bloque 7: Instalaciones y apoyos -->
         <div class="panel tile-infraestructura" id="mosaic-infraestructura">
             <div class="mosaic-title">
-                <span class="pill pill-blue">HÁBITAT & BIOESTRUCTURA</span>
-                <h3>Infraestructura de Soporte</h3>
+                <h3>Agua, nidos y abono</h3>
             </div>
-            <p>Cargando elementos biofísicos...</p>
+            <p>Cargando instalaciones...</p>
         </div>
 
     </div>

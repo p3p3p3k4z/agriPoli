@@ -71,64 +71,180 @@ def exportar_archivos_markdown_y_texto(
     # 1. Guardar Isla Polinizadora (.md y .txt)
     isla_md_path = output_dir / f"prompt_isla_{slug}.md"
     isla_txt_path = output_dir / f"prompt_isla_{slug}.txt"
+    persp_isla = res_isla.get("perspectivas", {})
 
-    contenido_isla_md = f"""# Prompt: Isla Polinizadora Circular
+    contenido_isla_md = f"""# Prompts: Isla Polinizadora Circular (Aislada PNG / Sin Fondo)
 **Región:** {region_title}  
 **Estado:** {estado.title()} | **Municipio/Localidad:** {municipio.title()}  
 **Generador:** AgriPoli V3 (`mini_prompt_isla`)  
+**Estilo:** Asset 3D / Diorama Flotante Aislado en Fondo Blanco Puro de Estudio (Sin Fondo Exterior / Sin Cielo)
 
 ---
 
-## Opción 1: Español (DALL-E 3 / Bing Image Creator)
+## 1. Prompt Principal: Vista Isométrica 3D a 45° (Diorama Aislado PNG)
 
+### Español (DALL-E 3 / Bing Image Creator)
 ```text
 {res_isla.get('prompt_espanol', '')}
 ```
 
----
-
-## Opción 2: Inglés (Midjourney v6 / Flux.1)
-
+### Inglés (Midjourney v6.1 / Flux.1)
 ```text
 {res_isla.get('prompt_ingles', '')}
 ```
 
 ---
 
-## Propiedades Ecológicas Extraídas
+## 2. Prompts de Ajuste y Perspectiva
+
+### Perspectiva A: {persp_isla.get('cenital_90deg', {}).get('nombre', 'Vista Cenital / Top-Down 90°')}
+
+**Español:**
+```text
+{persp_isla.get('cenital_90deg', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_isla.get('cenital_90deg', {}).get('prompt_en', '')}
+```
+
+---
+
+### Perspectiva B: {persp_isla.get('ras_suelo_macro', {}).get('nombre', 'Vista Frontal a Ras de Suelo / Nivel de Ojo')}
+
+**Español:**
+```text
+{persp_isla.get('ras_suelo_macro', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_isla.get('ras_suelo_macro', {}).get('prompt_en', '')}
+```
+
+---
+
+### Perspectiva C: {persp_isla.get('corte_transversal_3d', {}).get('nombre', 'Vista Axonométrica 3/4 en Corte Transversal 3D')}
+
+**Español:**
+```text
+{persp_isla.get('corte_transversal_3d', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_isla.get('corte_transversal_3d', {}).get('prompt_en', '')}
+```
+
+---
+
+## Propiedades Botánicas y Ecológicas Extraídas
 ```json
 {json.dumps(res_isla.get('propiedades_extraidas', {}), ensure_ascii=False, indent=2)}
 ```
 """
+    contenido_isla_txt = (
+        f"========================================================================\n"
+        f"PROMPTS DE IMAGEN: ISLA POLINIZADORA EN {region_title.upper()}\n"
+        f"Generado por: AgriPoli V3 (mini_prompt_isla)\n"
+        f"Formato: Asset 3D / PNG Cutout Aislado en Fondo Blanco (Sin Fondo Exterior)\n"
+        f"========================================================================\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"1. PROMPT PRINCIPAL (Vista Isométrica 3D a 45° — Diorama Aislado PNG)\n"
+        f"------------------------------------------------------------------------\n\n"
+        f"[ESPAÑOL]\n{res_isla.get('prompt_espanol', '')}\n\n"
+        f"[INGLÉS (Midjourney v6.1 / Flux.1)]\n{res_isla.get('prompt_ingles', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"2. PERSPECTIVAS Y AJUSTES DE CÁMARA JUGANDO CON LA MISMA ESCENA\n"
+        f"------------------------------------------------------------------------\n\n"
+        f"▶ PERSPECTIVA A: {persp_isla.get('cenital_90deg', {}).get('nombre', 'Vista Cenital / Top-Down 90°')}\n"
+        f"[ESPAÑOL]\n{persp_isla.get('cenital_90deg', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_isla.get('cenital_90deg', {}).get('prompt_en', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"▶ PERSPECTIVA B: {persp_isla.get('ras_suelo_macro', {}).get('nombre', 'Vista Frontal a Ras de Suelo / Nivel de Ojo')}\n"
+        f"[ESPAÑOL]\n{persp_isla.get('ras_suelo_macro', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_isla.get('ras_suelo_macro', {}).get('prompt_en', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"▶ PERSPECTIVA C: {persp_isla.get('corte_transversal_3d', {}).get('nombre', 'Vista Axonométrica 3/4 en Corte Transversal')}\n"
+        f"[ESPAÑOL]\n{persp_isla.get('corte_transversal_3d', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_isla.get('corte_transversal_3d', {}).get('prompt_en', '')}\n\n"
+        f"========================================================================\n"
+    )
+
     with open(isla_md_path, "w", encoding="utf-8") as f:
         f.write(contenido_isla_md)
     with open(isla_txt_path, "w", encoding="utf-8") as f:
-        f.write(f"=== PROMPT ISLA POLINIZADORA: {region_title.upper()} ===\n\n[ESPAÑOL]\n{res_isla.get('prompt_espanol', '')}\n\n[INGLÉS]\n{res_isla.get('prompt_ingles', '')}\n")
+        f.write(contenido_isla_txt)
     rutas_generadas["isla_md"] = str(isla_md_path)
 
     # 2. Guardar Parcela Agrícola (.md y .txt)
     cultivo_md_path = output_dir / f"prompt_cultivo_{slug}.md"
     cultivo_txt_path = output_dir / f"prompt_cultivo_{slug}.txt"
+    persp_cultivo = res_cultivo.get("perspectivas", {})
 
-    contenido_cultivo_md = f"""# Prompt: Parcela Agrícola y Policultivo
+    contenido_cultivo_md = f"""# Prompts: Parcela Agrícola y Policultivo (Bloque Aislado PNG)
 **Región:** {region_title}  
 **Estado:** {estado.title()} | **Municipio/Localidad:** {municipio.title()}  
 **Generador:** AgriPoli V3 (`mini_prompt_cultivo`)  
+**Estilo:** Bloque 3D / Diorama de Terreno Agrícola Aislado en Fondo Blanco Puro (Sin Fondo Exterior / Sin Cielo)
 
 ---
 
-## Opción 1: Español (DALL-E 3 / Bing Image Creator)
+## 1. Prompt Principal: Vista Isométrica 3D a 45° (Bloque Aislado PNG)
 
+### Español (DALL-E 3 / Bing Image Creator)
 ```text
 {res_cultivo.get('prompt_espanol', '')}
 ```
 
----
-
-## Opción 2: Inglés (Midjourney v6 / Flux.1)
-
+### Inglés (Midjourney v6.1 / Flux.1)
 ```text
 {res_cultivo.get('prompt_ingles', '')}
+```
+
+---
+
+## 2. Prompts de Ajuste y Perspectiva
+
+### Perspectiva A: {persp_cultivo.get('cenital_90deg', {}).get('nombre', 'Vista Cenital / Top-Down 90°')}
+
+**Español:**
+```text
+{persp_cultivo.get('cenital_90deg', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_cultivo.get('cenital_90deg', {}).get('prompt_en', '')}
+```
+
+---
+
+### Perspectiva B: {persp_cultivo.get('ras_suelo_macro', {}).get('nombre', 'Vista Frontal a Ras de Suelo / Entre Surcos')}
+
+**Español:**
+```text
+{persp_cultivo.get('ras_suelo_macro', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_cultivo.get('ras_suelo_macro', {}).get('prompt_en', '')}
+```
+
+---
+
+### Perspectiva C: {persp_cultivo.get('corte_transversal_3d', {}).get('nombre', 'Vista Axonométrica 3/4 con Perfil de Estratos de Suelo')}
+
+**Español:**
+```text
+{persp_cultivo.get('corte_transversal_3d', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_cultivo.get('corte_transversal_3d', {}).get('prompt_en', '')}
 ```
 
 ---
@@ -138,43 +254,144 @@ def exportar_archivos_markdown_y_texto(
 {json.dumps(res_cultivo.get('propiedades_extraidas', {}), ensure_ascii=False, indent=2)}
 ```
 """
+    contenido_cultivo_txt = (
+        f"========================================================================\n"
+        f"PROMPTS DE IMAGEN: PARCELA Y RECUADRO DE CULTIVOS EN {region_title.upper()}\n"
+        f"Generado por: AgriPoli V3 (mini_prompt_cultivo)\n"
+        f"Formato: Bloque 3D / PNG Cutout Aislado en Fondo Blanco (Sin Fondo Exterior)\n"
+        f"========================================================================\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"1. PROMPT PRINCIPAL (Vista Isométrica 3D a 45° — Bloque Aislado PNG)\n"
+        f"------------------------------------------------------------------------\n\n"
+        f"[ESPAÑOL]\n{res_cultivo.get('prompt_espanol', '')}\n\n"
+        f"[INGLÉS (Midjourney v6.1 / Flux.1)]\n{res_cultivo.get('prompt_ingles', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"2. PERSPECTIVAS Y AJUSTES DE CÁMARA JUGANDO CON LA MISMA ESCENA\n"
+        f"------------------------------------------------------------------------\n\n"
+        f"▶ PERSPECTIVA A: {persp_cultivo.get('cenital_90deg', {}).get('nombre', 'Vista Cenital / Top-Down 90°')}\n"
+        f"[ESPAÑOL]\n{persp_cultivo.get('cenital_90deg', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_cultivo.get('cenital_90deg', {}).get('prompt_en', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"▶ PERSPECTIVA B: {persp_cultivo.get('ras_suelo_macro', {}).get('nombre', 'Vista Frontal a Ras de Suelo / Entre Surcos')}\n"
+        f"[ESPAÑOL]\n{persp_cultivo.get('ras_suelo_macro', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_cultivo.get('ras_suelo_macro', {}).get('prompt_en', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"▶ PERSPECTIVA C: {persp_cultivo.get('corte_transversal_3d', {}).get('nombre', 'Vista Axonométrica 3/4 con Perfil de Estratos')}\n"
+        f"[ESPAÑOL]\n{persp_cultivo.get('corte_transversal_3d', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_cultivo.get('corte_transversal_3d', {}).get('prompt_en', '')}\n\n"
+        f"========================================================================\n"
+    )
+
     with open(cultivo_md_path, "w", encoding="utf-8") as f:
         f.write(contenido_cultivo_md)
     with open(cultivo_txt_path, "w", encoding="utf-8") as f:
-        f.write(f"=== PROMPT PARCELA DE CULTIVOS: {region_title.upper()} ===\n\n[ESPAÑOL]\n{res_cultivo.get('prompt_espanol', '')}\n\n[INGLÉS]\n{res_cultivo.get('prompt_ingles', '')}\n")
+        f.write(contenido_cultivo_txt)
     rutas_generadas["cultivo_md"] = str(cultivo_md_path)
 
     # 3. Guardar Escena Maestra Fusionada (.md y .txt)
     maestro_md_path = output_dir / f"prompt_maestro_{slug}.md"
     maestro_txt_path = output_dir / f"prompt_maestro_{slug}.txt"
+    persp_maestro = res_maestro.get("perspectivas", {})
 
-    contenido_maestro_md = f"""# Prompt Maestro: Isla Polinizadora + Parcela Agrícola
+    contenido_maestro_md = f"""# Prompt Maestro: Isla Polinizadora + Parcela Agrícola (Diorama 3D Aislado)
 **Región:** {region_title}  
 **Estado:** {estado.title()} | **Municipio/Localidad:** {municipio.title()}  
 **Generador:** AgriPoli V3 (`fusionador_prompts`)  
+**Estilo:** Gran Diorama 3D Agroecológico Aislado en Fondo Blanco Puro (Sin Fondo Exterior / Sin Cielo)
 
-> **Concepto Visual:** Convivencia armónica de la Isla Polinizadora circular situada en el centro neurálgico de la parcela agrícola delimitada, mostrando en plena acción a los polinizadores y fauna benéfica pecoreando entre el santuario y las flores de los cultivos asociados.
+> **Concepto Visual:** Convivencia armónica de la Isla Polinizadora circular viva en el centro del bloque de terreno agrícola delimitado, mostrando en plena acción a los polinizadores y fauna auxiliar pecoreando entre el santuario y los cultivos asociados en un asset 3D completamente recortado.
 
 ---
 
-## Opción 1: Español Extenso (DALL-E 3 / Bing / Concept Art)
+## 1. Prompt Principal: Gran Diorama Agroecológico 3D a 45° (Aislado PNG)
 
+### Español Extenso (DALL-E 3 / Bing / Concept Art)
 ```text
 {res_maestro.get('prompt_espanol_extenso', '')}
 ```
 
----
-
-## Opción 2: Inglés Extenso (Midjourney v6 / Flux.1 / 3D Scene Reference)
-
+### Inglés Extenso (Midjourney v6.1 / Flux.1 / 3D Scene Reference)
 ```text
 {res_maestro.get('prompt_ingles_extenso', '')}
 ```
+
+---
+
+## 2. Prompts de Ajuste y Perspectiva
+
+### Perspectiva A: {persp_maestro.get('cenital_90deg', {}).get('nombre', 'Vista Cenital / Top-Down 90°')}
+
+**Español:**
+```text
+{persp_maestro.get('cenital_90deg', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_maestro.get('cenital_90deg', {}).get('prompt_en', '')}
+```
+
+---
+
+### Perspectiva B: {persp_maestro.get('ras_suelo_transicion', {}).get('nombre', 'Vista Frontal a Ras de Suelo / Transición')}
+
+**Español:**
+```text
+{persp_maestro.get('ras_suelo_transicion', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_maestro.get('ras_suelo_transicion', {}).get('prompt_en', '')}
+```
+
+---
+
+### Perspectiva C: {persp_maestro.get('corte_transversal_3d', {}).get('nombre', 'Vista Axonométrica 3/4 en Corte Transversal')}
+
+**Español:**
+```text
+{persp_maestro.get('corte_transversal_3d', {}).get('prompt_es', '')}
+```
+
+**Inglés:**
+```text
+{persp_maestro.get('corte_transversal_3d', {}).get('prompt_en', '')}
+```
 """
+    contenido_maestro_txt = (
+        f"========================================================================\n"
+        f"PROMPTS DE IMAGEN: ESCENA MAESTRA AGROECOLÓGICA EN {region_title.upper()}\n"
+        f"Isla Polinizadora Circular + Parcela Agrícola en Convivencia Viva\n"
+        f"Generado por: AgriPoli V3 (fusionador_prompts)\n"
+        f"Formato: Gran Diorama 3D / PNG Cutout Aislado en Fondo Blanco (Sin Fondo Exterior)\n"
+        f"========================================================================\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"1. PROMPT PRINCIPAL (Gran Diorama Agroecológico 3D a 45° — Aislado PNG)\n"
+        f"------------------------------------------------------------------------\n\n"
+        f"[ESPAÑOL EXTENSO]\n{res_maestro.get('prompt_espanol_extenso', '')}\n\n"
+        f"[INGLÉS EXTENSO (Midjourney v6.1 / Flux.1)]\n{res_maestro.get('prompt_ingles_extenso', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"2. PERSPECTIVAS Y AJUSTES DE CÁMARA JUGANDO CON LA MISMA ESCENA\n"
+        f"------------------------------------------------------------------------\n\n"
+        f"▶ PERSPECTIVA A: {persp_maestro.get('cenital_90deg', {}).get('nombre', 'Vista Cenital / Top-Down 90°')}\n"
+        f"[ESPAÑOL]\n{persp_maestro.get('cenital_90deg', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_maestro.get('cenital_90deg', {}).get('prompt_en', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"▶ PERSPECTIVA B: {persp_maestro.get('ras_suelo_transicion', {}).get('nombre', 'Vista Frontal a Ras de Suelo / Transición')}\n"
+        f"[ESPAÑOL]\n{persp_maestro.get('ras_suelo_transicion', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_maestro.get('ras_suelo_transicion', {}).get('prompt_en', '')}\n\n"
+        f"------------------------------------------------------------------------\n"
+        f"▶ PERSPECTIVA C: {persp_maestro.get('corte_transversal_3d', {}).get('nombre', 'Vista Axonométrica 3/4 en Corte Transversal')}\n"
+        f"[ESPAÑOL]\n{persp_maestro.get('corte_transversal_3d', {}).get('prompt_es', '')}\n\n"
+        f"[INGLÉS]\n{persp_maestro.get('corte_transversal_3d', {}).get('prompt_en', '')}\n\n"
+        f"========================================================================\n"
+    )
+
     with open(maestro_md_path, "w", encoding="utf-8") as f:
         f.write(contenido_maestro_md)
     with open(maestro_txt_path, "w", encoding="utf-8") as f:
-        f.write(f"=== PROMPT MAESTRO AGROECOLÓGICO: {region_title.upper()} ===\n\n[ESPAÑOL EXTENSO]\n{res_maestro.get('prompt_espanol_extenso', '')}\n\n[INGLÉS EXTENSO]\n{res_maestro.get('prompt_ingles_extenso', '')}\n")
+        f.write(contenido_maestro_txt)
     rutas_generadas["maestro_md"] = str(maestro_md_path)
 
     return rutas_generadas
